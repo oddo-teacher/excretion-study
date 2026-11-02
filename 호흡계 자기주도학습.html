@@ -1,0 +1,2459 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+  :root {
+    --pink:#FFB7C5; --lpink:#FFE4EC;
+    --purple:#C9B1FF; --lpurple:#EDE8FF;
+    --mint:#B5EAD7; --lmint:#E8F8F2;
+    --sky:#AED6F1; --lsky:#EBF5FB;
+    --yellow:#FFEAA7;
+    --text:#4A4A6A; --shadow:rgba(200,180,230,0.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Jua',sans-serif;background:linear-gradient(135deg,#FFE4EC 0%,#EDE8FF 50%,#E8F8F2 100%);min-height:100vh;color:var(--text);}
+
+  /* ── 로그인 화면 ── */
+  #loginScreen {
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card {
+    background:#fff;border-radius:32px;padding:44px 38px;
+    box-shadow:0 12px 48px rgba(200,180,230,0.45);
+    max-width:440px;width:100%;text-align:center;
+  }
+  .login-emoji { font-size:3.8rem; display:block; margin-bottom:10px;
+    animation: floatEmoji 2.4s ease-in-out infinite; }
+  @keyframes floatEmoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .login-title { font-size:1.7rem; color:#9B59B6; margin-bottom:4px; }
+  .login-sub   { font-size:.92rem; color:#aaa; margin-bottom:28px; }
+  .login-form  { display:flex; flex-direction:column; gap:14px; text-align:left; }
+  .login-form label { font-size:.9rem; color:#9B59B6; margin-bottom:3px; display:block; }
+  .login-row { display:flex; gap:10px; }
+  .login-input {
+    font-family:'Jua',sans-serif;
+    width:100%; padding:12px 16px; font-size:1rem;
+    border:2px solid #EDE8FF; border-radius:14px; outline:none;
+    transition:border-color .2s; color:var(--text);
+    background:#FAFAFE;
+  }
+  .login-input:focus { border-color:#C9B1FF; background:#fff; }
+  .login-input.err  { border-color:#FFB7C5; background:#FFF5F7; }
+  .login-err { font-size:.85rem; color:#e74c3c; margin-top:-8px; display:none; }
+  .login-btn {
+    font-family:'Jua',sans-serif;
+    width:100%; padding:14px; font-size:1.1rem;
+    border:none; border-radius:18px;
+    background:linear-gradient(90deg,#FFB7C5,#C9B1FF);
+    color:#fff; cursor:pointer;
+    box-shadow:0 4px 16px var(--shadow);
+    transition:transform .2s, opacity .2s;
+    margin-top:6px;
+  }
+  .login-btn:hover { transform:scale(1.03); }
+  .login-notice {
+    margin-top:18px; padding:12px 16px;
+    background:#FFF9FF; border-radius:12px;
+    font-size:.85rem; color:#aaa; line-height:1.6;
+    border:1px dashed #EDE8FF;
+  }
+
+  /* ── 메인 앱 (숨김 상태로 시작) ── */
+  #mainApp { display:none; }
+
+  /* ── 헤더 ── */
+  .site-header{background:linear-gradient(90deg,#FFB7C5,#C9B1FF,#B5EAD7);text-align:center;padding:18px 16px 12px;box-shadow:0 4px 16px var(--shadow);position:sticky;top:0;z-index:200;}
+  .site-header h1{font-size:1.8rem;color:#fff;text-shadow:1px 2px 6px rgba(0,0,0,.18);}
+  .site-header p{color:#fff;font-size:.88rem;margin-top:3px;}
+  .student-badge {
+    display:inline-block; margin-top:7px;
+    background:rgba(255,255,255,0.28); color:#fff;
+    border-radius:20px; padding:4px 16px; font-size:.88rem;
+  }
+
+  /* ── 진도 ── */
+  .prog-wrap{background:#fff;border-radius:20px;margin:12px auto;max-width:900px;padding:9px 18px;box-shadow:0 2px 10px var(--shadow);display:flex;align-items:center;gap:10px;}
+  .prog-bg{flex:1;height:15px;background:#EEE;border-radius:10px;overflow:hidden;}
+  .prog-fill{height:100%;background:linear-gradient(90deg,#FFB7C5,#C9B1FF);border-radius:10px;transition:width .5s ease;width:0%;}
+
+  /* ── 네비 ── */
+  .nav-wrap{max-width:900px;margin:0 auto 16px;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:0 16px;}
+  .nav-btn{font-family:'Jua',sans-serif;font-size:.82rem;padding:6px 12px;border-radius:20px;border:2px solid transparent;cursor:pointer;transition:all .2s;background:#fff;color:var(--text);box-shadow:0 2px 8px var(--shadow);}
+  .nav-btn.active{background:var(--pink);color:#fff;border-color:#ff8fa8;}
+  .nav-btn.locked{opacity:.38;cursor:not-allowed;pointer-events:none;}
+  .nav-btn.done{background:var(--mint);color:#3a8a6a;}
+
+  /* ── 섹션 ── */
+  .section{max-width:900px;margin:0 auto 30px;padding:0 16px;display:none;}
+  .section.active{display:block;}
+
+  /* ── 카드 ── */
+  .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 6px 24px var(--shadow);margin-bottom:16px;}
+  .card h2{font-size:1.4rem;margin-bottom:12px;}
+  .card h3{font-size:1.05rem;margin-bottom:9px;color:#7a5fa0;}
+
+  /* ── 모형 배너 ── */
+  .model-banner{background:linear-gradient(135deg,#FFF9C4,#FFEAA7);border:3px dashed #F0C040;border-radius:16px;padding:16px 20px;margin:14px 0;display:flex;align-items:flex-start;gap:12px;}
+  .model-banner .mb-icon{font-size:2.2rem;flex-shrink:0;}
+  .model-banner .mb-text{font-size:.95rem;line-height:1.8;color:#7a5a00;}
+
+  /* ── 다음 버튼 ── */
+  .next-btn{font-family:'Jua',sans-serif;display:block;margin:20px auto 0;padding:13px 34px;font-size:1.05rem;border:none;border-radius:28px;background:linear-gradient(90deg,#FFB7C5,#C9B1FF);color:#fff;cursor:not-allowed;box-shadow:0 4px 14px var(--shadow);transition:transform .2s,opacity .2s;opacity:.35;pointer-events:none;}
+  .next-btn.on{opacity:1;pointer-events:auto;cursor:pointer;}
+  .next-btn.on:hover{transform:scale(1.04);}
+  .lock-hint{text-align:center;font-size:.86rem;color:#bbb;margin-top:6px;}
+
+  /* ── 탭 ── */
+  .tab-wrap{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+  .tab-btn{font-family:'Jua',sans-serif;padding:7px 14px;border-radius:18px;border:2px solid #C9B1FF;background:#fff;color:var(--text);cursor:pointer;font-size:.9rem;transition:all .2s;}
+  .tab-btn.active{background:#C9B1FF;color:#fff;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;animation:fadeIn .3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── 태스크 리스트 ── */
+  .task-list{list-style:none;padding:0;margin-top:6px;}
+  .task-list li{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:11px;font-size:.92rem;margin-bottom:5px;background:#F8F4FF;border:2px solid transparent;transition:all .3s;}
+  .task-list li.done-item{background:#E8F8F2;border-color:#B5EAD7;color:#3a8a6a;}
+  .task-list li .tk-check{margin-left:auto;}
+
+  /* ── 호흡기관 ── */
+  .organ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:11px;margin-top:12px;}
+  .organ-card{background:linear-gradient(135deg,#FFE4EC,#EDE8FF);border-radius:14px;padding:14px 11px;text-align:center;cursor:pointer;box-shadow:0 3px 10px var(--shadow);transition:transform .2s;border:2px solid transparent;}
+  .organ-card:hover{transform:translateY(-3px);}
+  .organ-card.visited{border-color:#B5EAD7;background:linear-gradient(135deg,#E8F8F2,#EDE8FF);}
+  .organ-detail{background:#FFF9FF;border-radius:12px;padding:14px;margin-top:12px;border-left:5px solid #C9B1FF;display:none;}
+  .organ-detail.show{display:block;animation:fadeIn .3s;}
+
+  /* ── 허파꽈리 비교 ── */
+  .alv-compare{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;}
+  .alv-box{flex:1;min-width:170px;border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:transform .2s;box-shadow:0 3px 10px var(--shadow);}
+  .alv-box:hover{transform:scale(1.02);}
+  .alv-box.ga{background:linear-gradient(135deg,#FFE4EC,#FFB7C5);}
+  .alv-box.na{background:linear-gradient(135deg,#EDE8FF,#C9B1FF);}
+  .alv-vis{width:100%;height:105px;border-radius:9px;background:#fff;overflow:hidden;}
+  .alv-info{display:none;margin-top:9px;font-size:.86rem;text-align:left;line-height:1.7;background:#fff;border-radius:9px;padding:9px;}
+  .alv-info.show{display:block;}
+
+  /* ── 흡연 비교 ── */
+  .smoke-compare{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .smoke-box{flex:1;min-width:170px;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:transform .2s;box-shadow:0 3px 10px var(--shadow);}
+  .smoke-box:hover{transform:scale(1.02);}
+  .smoke-box.h{background:linear-gradient(135deg,#E8F8F2,#B5EAD7);}
+  .smoke-box.s{background:linear-gradient(135deg,#FFF0EE,#FAD7D7);}
+  .smoke-detail{display:none;margin-top:7px;font-size:.86rem;line-height:1.7;}
+  .smoke-detail.show{display:block;}
+
+  /* ── 기체교환 캔버스 ── */
+  .gas-canvas{width:100%;height:260px;border-radius:14px;background:#F8F0FF;border:2px solid #C9B1FF;}
+
+  /* ── 호흡운동 버튼 ── */
+  .breath-btn-wrap{display:flex;gap:9px;justify-content:center;margin:12px 0;flex-wrap:wrap;}
+  .bbtn{font-family:'Jua',sans-serif;padding:9px 20px;border-radius:20px;border:none;font-size:.92rem;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px var(--shadow);}
+  .bbtn.inhale{background:linear-gradient(90deg,#AED6F1,#85C1E9);color:#fff;}
+  .bbtn.exhale{background:linear-gradient(90deg,#F9E79F,#F7DC6F);color:#7a6a00;}
+  .bbtn.autoplay{background:linear-gradient(90deg,#B5EAD7,#82E0AA);color:#2d7a50;}
+
+  /* ── 표 ── */
+  .tb{width:100%;border-collapse:collapse;margin-top:9px;border-radius:11px;overflow:hidden;}
+  .tb th{background:linear-gradient(90deg,#C9B1FF,#FFB7C5);color:#fff;padding:9px 11px;font-size:.9rem;}
+  .tb td{padding:8px 11px;border-bottom:1px solid #f0e8f8;font-size:.9rem;text-align:center;}
+  .tb tr:last-child td{border-bottom:none;}
+  .tb tr:nth-child(even) td{background:#FFF5FF;}
+
+  /* ── 퀴즈 ── */
+  .quiz-card{background:linear-gradient(135deg,#FFF0FA,#EDE8FF);border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 4px 12px var(--shadow);}
+  .quiz-q{font-size:.97rem;margin-bottom:12px;line-height:1.7;}
+  .quiz-opts{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px;}
+  .quiz-opts li{background:#fff;border-radius:11px;padding:10px 14px;cursor:pointer;border:2px solid transparent;transition:all .2s;font-size:.9rem;}
+  .quiz-opts li:hover:not(.answered){border-color:#C9B1FF;background:#F5F0FF;}
+  .quiz-opts li.correct{border-color:#2ecc71!important;background:#E8F8F0!important;}
+  .quiz-opts li.wrong{border-color:#e74c3c!important;background:#FFF0EE!important;}
+  .quiz-opts li.answered{cursor:default;}
+  .quiz-fb{margin-top:8px;padding:9px 13px;border-radius:9px;font-size:.9rem;display:none;}
+  .quiz-fb.ok{background:#E8F8F0;color:#27ae60;display:block;}
+  .quiz-fb.ng{background:#FFF0EE;color:#e74c3c;display:block;}
+  .quiz-score-box{text-align:center;font-size:1.1rem;margin-top:16px;padding:14px;background:linear-gradient(135deg,#E8F8F2,#EDE8FF);border-radius:14px;display:none;}
+
+  /* ── 플래시카드 ── */
+  .flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px;margin-top:12px;}
+  .fc{height:120px;perspective:600px;cursor:pointer;}
+  .fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+  .fc.flipped .fc-inner{transform:rotateY(180deg);}
+  .fc-front,.fc-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:11px;font-size:.92rem;box-shadow:0 4px 12px var(--shadow);}
+  .fc-front{background:linear-gradient(135deg,#FFE4EC,#EDE8FF);}
+  .fc-back{background:linear-gradient(135deg,#E8F8F2,#AED6F1);transform:rotateY(180deg);font-size:.8rem;line-height:1.5;}
+
+  /* ── 빈칸 ── */
+  .blank-wrap{font-size:.97rem;line-height:2.6;margin-bottom:9px;}
+  .blank-inp{font-family:'Jua',sans-serif;border:2px solid #C9B1FF;border-radius:9px;padding:3px 7px;font-size:.9rem;width:84px;text-align:center;outline:none;transition:border-color .2s;}
+  .blank-inp.ok{border-color:#2ecc71;background:#E8F8F0;}
+  .blank-inp.ng{border-color:#e74c3c;background:#FFF0EE;}
+  .check-btn{font-family:'Jua',sans-serif;margin-top:9px;padding:8px 20px;border-radius:16px;border:none;background:linear-gradient(90deg,#C9B1FF,#FFB7C5);color:#fff;font-size:.92rem;cursor:pointer;}
+
+  /* ── 힌트 ── */
+  .hint-box{background:#FFF5FF;border-left:4px solid #C9B1FF;border-radius:9px;padding:11px 14px;margin-top:11px;font-size:.9rem;display:none;animation:fadeIn .3s;}
+  .hint-box.show{display:block;}
+  .hint-btn{font-family:'Jua',sans-serif;background:none;border:2px solid #C9B1FF;border-radius:11px;padding:5px 13px;color:#9B59B6;cursor:pointer;font-size:.86rem;margin-top:9px;}
+
+  /* ── 완료 ── */
+  .done-wrap{text-align:center;padding:32px 18px;}
+  .done-emoji{font-size:3.6rem;display:block;animation:bounce 1s infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+
+  /* ── 결과 제출 카드 ── */
+  .result-card {
+    background: linear-gradient(135deg,#FFF0FA,#EDE8FF);
+    border-radius:22px; padding:28px;
+    box-shadow:0 6px 24px var(--shadow); margin-bottom:16px;
+  }
+  .result-title { font-size:1.3rem; color:#9B59B6; margin-bottom:16px; }
+  .result-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:12px; margin-bottom:20px;
+  }
+  .result-item {
+    background:#fff; border-radius:14px; padding:14px;
+    text-align:center; box-shadow:0 2px 8px var(--shadow);
+  }
+  .result-item .ri-label { font-size:.82rem; color:#aaa; margin-bottom:5px; }
+  .result-item .ri-value { font-size:1.2rem; color:#9B59B6; font-weight:bold; }
+
+  .submit-btn {
+    font-family:'Jua',sans-serif;
+    display:block; width:100%; padding:15px;
+    font-size:1.1rem; border:none; border-radius:18px;
+    background:linear-gradient(90deg,#C9B1FF,#FFB7C5);
+    color:#fff; cursor:pointer;
+    box-shadow:0 4px 16px var(--shadow);
+    transition:transform .2s;
+  }
+  .submit-btn:hover{transform:scale(1.02);}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+  .submit-done {
+    display:none; text-align:center; padding:20px;
+    background:#E8F8F2; border-radius:16px; margin-top:14px;
+  }
+  .submit-done.show{display:block;animation:fadeIn .4s;}
+
+  /* 결과 요약 바 */
+  .score-bar-wrap { margin:10px 0; }
+  .score-bar-label { display:flex; justify-content:space-between; font-size:.88rem; margin-bottom:4px; }
+  .score-bar-bg { height:14px; background:#EEE; border-radius:8px; overflow:hidden; }
+  .score-bar-fill { height:100%; background:linear-gradient(90deg,#FFB7C5,#C9B1FF); border-radius:8px; transition:width 1s ease; }
+
+  /* ── 최종 체크 ── */
+  .final-ck{list-style:none;padding:0;}
+  .final-ck li{display:flex;align-items:center;gap:9px;font-size:.92rem;padding:8px 0;border-bottom:1px solid #f0e8f8;cursor:pointer;}
+  .final-ck li span.ck{width:21px;height:21px;border-radius:50%;border:2px solid #C9B1FF;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+  .final-ck li.checked span.ck{background:var(--mint);border-color:#3aaa80;}
+  .final-ck li.checked{color:#aaa;text-decoration:line-through;}
+
+  /* ── 목표 ── */
+  .goal-list{list-style:none;padding:0;}
+  .goal-list li{display:flex;align-items:flex-start;gap:7px;padding:7px 0;font-size:.95rem;border-bottom:1px dashed #EDE8FF;}
+  .goal-list li::before{content:"📌";flex-shrink:0;}
+
+  @media(max-width:580px){
+    .login-card{padding:32px 22px;}
+    .login-title{font-size:1.4rem;}
+    .site-header h1{font-size:1.3rem;}
+    .card{padding:16px 13px;}
+    .organ-grid{grid-template-columns:repeat(2,1fr);}
+    .flash-grid{grid-template-columns:repeat(2,1fr);}
+    .result-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🫁 호흡계 자기주도 학습</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink:#FFB7C5; --lpink:#FFE4EC;
+    --purple:#C9B1FF; --lpurple:#EDE8FF;
+    --mint:#B5EAD7; --lmint:#E8F8F2;
+    --sky:#AED6F1; --lsky:#EBF5FB;
+    --yellow:#FFEAA7;
+    --text:#4A4A6A; --shadow:rgba(200,180,230,0.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Jua',sans-serif;background:linear-gradient(135deg,#FFE4EC 0%,#EDE8FF 50%,#E8F8F2 100%);min-height:100vh;color:var(--text);}
+
+  /* ── 로그인 화면 ── */
+  #loginScreen {
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card {
+    background:#fff;border-radius:32px;padding:44px 38px;
+    box-shadow:0 12px 48px rgba(200,180,230,0.45);
+    max-width:440px;width:100%;text-align:center;
+  }
+  .login-emoji { font-size:3.8rem; display:block; margin-bottom:10px;
+    animation: floatEmoji 2.4s ease-in-out infinite; }
+  @keyframes floatEmoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .login-title { font-size:1.7rem; color:#9B59B6; margin-bottom:4px; }
+  .login-sub   { font-size:.92rem; color:#aaa; margin-bottom:28px; }
+  .login-form  { display:flex; flex-direction:column; gap:14px; text-align:left; }
+  .login-form label { font-size:.9rem; color:#9B59B6; margin-bottom:3px; display:block; }
+  .login-row { display:flex; gap:10px; }
+  .login-input {
+    font-family:'Jua',sans-serif;
+    width:100%; padding:12px 16px; font-size:1rem;
+    border:2px solid #EDE8FF; border-radius:14px; outline:none;
+    transition:border-color .2s; color:var(--text);
+    background:#FAFAFE;
+  }
+  .login-input:focus { border-color:#C9B1FF; background:#fff; }
+  .login-input.err  { border-color:#FFB7C5; background:#FFF5F7; }
+  .login-err { font-size:.85rem; color:#e74c3c; margin-top:-8px; display:none; }
+  .login-btn {
+    font-family:'Jua',sans-serif;
+    width:100%; padding:14px; font-size:1.1rem;
+    border:none; border-radius:18px;
+    background:linear-gradient(90deg,#FFB7C5,#C9B1FF);
+    color:#fff; cursor:pointer;
+    box-shadow:0 4px 16px var(--shadow);
+    transition:transform .2s, opacity .2s;
+    margin-top:6px;
+  }
+  .login-btn:hover { transform:scale(1.03); }
+  .login-notice {
+    margin-top:18px; padding:12px 16px;
+    background:#FFF9FF; border-radius:12px;
+    font-size:.85rem; color:#aaa; line-height:1.6;
+    border:1px dashed #EDE8FF;
+  }
+
+  /* ── 메인 앱 (숨김 상태로 시작) ── */
+  #mainApp { display:none; }
+
+  /* ── 헤더 ── */
+  .site-header{background:linear-gradient(90deg,#FFB7C5,#C9B1FF,#B5EAD7);text-align:center;padding:18px 16px 12px;box-shadow:0 4px 16px var(--shadow);position:sticky;top:0;z-index:200;}
+  .site-header h1{font-size:1.8rem;color:#fff;text-shadow:1px 2px 6px rgba(0,0,0,.18);}
+  .site-header p{color:#fff;font-size:.88rem;margin-top:3px;}
+  .student-badge {
+    display:inline-block; margin-top:7px;
+    background:rgba(255,255,255,0.28); color:#fff;
+    border-radius:20px; padding:4px 16px; font-size:.88rem;
+  }
+
+  /* ── 진도 ── */
+  .prog-wrap{background:#fff;border-radius:20px;margin:12px auto;max-width:900px;padding:9px 18px;box-shadow:0 2px 10px var(--shadow);display:flex;align-items:center;gap:10px;}
+  .prog-bg{flex:1;height:15px;background:#EEE;border-radius:10px;overflow:hidden;}
+  .prog-fill{height:100%;background:linear-gradient(90deg,#FFB7C5,#C9B1FF);border-radius:10px;transition:width .5s ease;width:0%;}
+
+  /* ── 네비 ── */
+  .nav-wrap{max-width:900px;margin:0 auto 16px;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:0 16px;}
+  .nav-btn{font-family:'Jua',sans-serif;font-size:.82rem;padding:6px 12px;border-radius:20px;border:2px solid transparent;cursor:pointer;transition:all .2s;background:#fff;color:var(--text);box-shadow:0 2px 8px var(--shadow);}
+  .nav-btn.active{background:var(--pink);color:#fff;border-color:#ff8fa8;}
+  .nav-btn.locked{opacity:.38;cursor:not-allowed;pointer-events:none;}
+  .nav-btn.done{background:var(--mint);color:#3a8a6a;}
+
+  /* ── 섹션 ── */
+  .section{max-width:900px;margin:0 auto 30px;padding:0 16px;display:none;}
+  .section.active{display:block;}
+
+  /* ── 카드 ── */
+  .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 6px 24px var(--shadow);margin-bottom:16px;}
+  .card h2{font-size:1.4rem;margin-bottom:12px;}
+  .card h3{font-size:1.05rem;margin-bottom:9px;color:#7a5fa0;}
+
+  /* ── 모형 배너 ── */
+  .model-banner{background:linear-gradient(135deg,#FFF9C4,#FFEAA7);border:3px dashed #F0C040;border-radius:16px;padding:16px 20px;margin:14px 0;display:flex;align-items:flex-start;gap:12px;}
+  .model-banner .mb-icon{font-size:2.2rem;flex-shrink:0;}
+  .model-banner .mb-text{font-size:.95rem;line-height:1.8;color:#7a5a00;}
+
+  /* ── 다음 버튼 ── */
+  .next-btn{font-family:'Jua',sans-serif;display:block;margin:20px auto 0;padding:13px 34px;font-size:1.05rem;border:none;border-radius:28px;background:linear-gradient(90deg,#FFB7C5,#C9B1FF);color:#fff;cursor:not-allowed;box-shadow:0 4px 14px var(--shadow);transition:transform .2s,opacity .2s;opacity:.35;pointer-events:none;}
+  .next-btn.on{opacity:1;pointer-events:auto;cursor:pointer;}
+  .next-btn.on:hover{transform:scale(1.04);}
+  .lock-hint{text-align:center;font-size:.86rem;color:#bbb;margin-top:6px;}
+
+  /* ── 탭 ── */
+  .tab-wrap{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+  .tab-btn{font-family:'Jua',sans-serif;padding:7px 14px;border-radius:18px;border:2px solid #C9B1FF;background:#fff;color:var(--text);cursor:pointer;font-size:.9rem;transition:all .2s;}
+  .tab-btn.active{background:#C9B1FF;color:#fff;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;animation:fadeIn .3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── 태스크 리스트 ── */
+  .task-list{list-style:none;padding:0;margin-top:6px;}
+  .task-list li{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:11px;font-size:.92rem;margin-bottom:5px;background:#F8F4FF;border:2px solid transparent;transition:all .3s;}
+  .task-list li.done-item{background:#E8F8F2;border-color:#B5EAD7;color:#3a8a6a;}
+  .task-list li .tk-check{margin-left:auto;}
+
+  /* ── 호흡기관 ── */
+  .organ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:11px;margin-top:12px;}
+  .organ-card{background:linear-gradient(135deg,#FFE4EC,#EDE8FF);border-radius:14px;padding:14px 11px;text-align:center;cursor:pointer;box-shadow:0 3px 10px var(--shadow);transition:transform .2s;border:2px solid transparent;}
+  .organ-card:hover{transform:translateY(-3px);}
+  .organ-card.visited{border-color:#B5EAD7;background:linear-gradient(135deg,#E8F8F2,#EDE8FF);}
+  .organ-detail{background:#FFF9FF;border-radius:12px;padding:14px;margin-top:12px;border-left:5px solid #C9B1FF;display:none;}
+  .organ-detail.show{display:block;animation:fadeIn .3s;}
+
+  /* ── 허파꽈리 비교 ── */
+  .alv-compare{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;}
+  .alv-box{flex:1;min-width:170px;border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:transform .2s;box-shadow:0 3px 10px var(--shadow);}
+  .alv-box:hover{transform:scale(1.02);}
+  .alv-box.ga{background:linear-gradient(135deg,#FFE4EC,#FFB7C5);}
+  .alv-box.na{background:linear-gradient(135deg,#EDE8FF,#C9B1FF);}
+  .alv-vis{width:100%;height:105px;border-radius:9px;background:#fff;overflow:hidden;}
+  .alv-info{display:none;margin-top:9px;font-size:.86rem;text-align:left;line-height:1.7;background:#fff;border-radius:9px;padding:9px;}
+  .alv-info.show{display:block;}
+
+  /* ── 흡연 비교 ── */
+  .smoke-compare{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .smoke-box{flex:1;min-width:170px;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:transform .2s;box-shadow:0 3px 10px var(--shadow);}
+  .smoke-box:hover{transform:scale(1.02);}
+  .smoke-box.h{background:linear-gradient(135deg,#E8F8F2,#B5EAD7);}
+  .smoke-box.s{background:linear-gradient(135deg,#FFF0EE,#FAD7D7);}
+  .smoke-detail{display:none;margin-top:7px;font-size:.86rem;line-height:1.7;}
+  .smoke-detail.show{display:block;}
+
+  /* ── 기체교환 캔버스 ── */
+  .gas-canvas{width:100%;height:260px;border-radius:14px;background:#F8F0FF;border:2px solid #C9B1FF;}
+
+  /* ── 호흡운동 버튼 ── */
+  .breath-btn-wrap{display:flex;gap:9px;justify-content:center;margin:12px 0;flex-wrap:wrap;}
+  .bbtn{font-family:'Jua',sans-serif;padding:9px 20px;border-radius:20px;border:none;font-size:.92rem;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px var(--shadow);}
+  .bbtn.inhale{background:linear-gradient(90deg,#AED6F1,#85C1E9);color:#fff;}
+  .bbtn.exhale{background:linear-gradient(90deg,#F9E79F,#F7DC6F);color:#7a6a00;}
+  .bbtn.autoplay{background:linear-gradient(90deg,#B5EAD7,#82E0AA);color:#2d7a50;}
+
+  /* ── 표 ── */
+  .tb{width:100%;border-collapse:collapse;margin-top:9px;border-radius:11px;overflow:hidden;}
+  .tb th{background:linear-gradient(90deg,#C9B1FF,#FFB7C5);color:#fff;padding:9px 11px;font-size:.9rem;}
+  .tb td{padding:8px 11px;border-bottom:1px solid #f0e8f8;font-size:.9rem;text-align:center;}
+  .tb tr:last-child td{border-bottom:none;}
+  .tb tr:nth-child(even) td{background:#FFF5FF;}
+
+  /* ── 퀴즈 ── */
+  .quiz-card{background:linear-gradient(135deg,#FFF0FA,#EDE8FF);border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 4px 12px var(--shadow);}
+  .quiz-q{font-size:.97rem;margin-bottom:12px;line-height:1.7;}
+  .quiz-opts{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px;}
+  .quiz-opts li{background:#fff;border-radius:11px;padding:10px 14px;cursor:pointer;border:2px solid transparent;transition:all .2s;font-size:.9rem;}
+  .quiz-opts li:hover:not(.answered){border-color:#C9B1FF;background:#F5F0FF;}
+  .quiz-opts li.correct{border-color:#2ecc71!important;background:#E8F8F0!important;}
+  .quiz-opts li.wrong{border-color:#e74c3c!important;background:#FFF0EE!important;}
+  .quiz-opts li.answered{cursor:default;}
+  .quiz-fb{margin-top:8px;padding:9px 13px;border-radius:9px;font-size:.9rem;display:none;}
+  .quiz-fb.ok{background:#E8F8F0;color:#27ae60;display:block;}
+  .quiz-fb.ng{background:#FFF0EE;color:#e74c3c;display:block;}
+  .quiz-score-box{text-align:center;font-size:1.1rem;margin-top:16px;padding:14px;background:linear-gradient(135deg,#E8F8F2,#EDE8FF);border-radius:14px;display:none;}
+
+  /* ── 플래시카드 ── */
+  .flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px;margin-top:12px;}
+  .fc{height:120px;perspective:600px;cursor:pointer;}
+  .fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+  .fc.flipped .fc-inner{transform:rotateY(180deg);}
+  .fc-front,.fc-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:11px;font-size:.92rem;box-shadow:0 4px 12px var(--shadow);}
+  .fc-front{background:linear-gradient(135deg,#FFE4EC,#EDE8FF);}
+  .fc-back{background:linear-gradient(135deg,#E8F8F2,#AED6F1);transform:rotateY(180deg);font-size:.8rem;line-height:1.5;}
+
+  /* ── 빈칸 ── */
+  .blank-wrap{font-size:.97rem;line-height:2.6;margin-bottom:9px;}
+  .blank-inp{font-family:'Jua',sans-serif;border:2px solid #C9B1FF;border-radius:9px;padding:3px 7px;font-size:.9rem;width:84px;text-align:center;outline:none;transition:border-color .2s;}
+  .blank-inp.ok{border-color:#2ecc71;background:#E8F8F0;}
+  .blank-inp.ng{border-color:#e74c3c;background:#FFF0EE;}
+  .check-btn{font-family:'Jua',sans-serif;margin-top:9px;padding:8px 20px;border-radius:16px;border:none;background:linear-gradient(90deg,#C9B1FF,#FFB7C5);color:#fff;font-size:.92rem;cursor:pointer;}
+
+  /* ── 힌트 ── */
+  .hint-box{background:#FFF5FF;border-left:4px solid #C9B1FF;border-radius:9px;padding:11px 14px;margin-top:11px;font-size:.9rem;display:none;animation:fadeIn .3s;}
+  .hint-box.show{display:block;}
+  .hint-btn{font-family:'Jua',sans-serif;background:none;border:2px solid #C9B1FF;border-radius:11px;padding:5px 13px;color:#9B59B6;cursor:pointer;font-size:.86rem;margin-top:9px;}
+
+  /* ── 완료 ── */
+  .done-wrap{text-align:center;padding:32px 18px;}
+  .done-emoji{font-size:3.6rem;display:block;animation:bounce 1s infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+
+  /* ── 결과 제출 카드 ── */
+  .result-card {
+    background: linear-gradient(135deg,#FFF0FA,#EDE8FF);
+    border-radius:22px; padding:28px;
+    box-shadow:0 6px 24px var(--shadow); margin-bottom:16px;
+  }
+  .result-title { font-size:1.3rem; color:#9B59B6; margin-bottom:16px; }
+  .result-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:12px; margin-bottom:20px;
+  }
+  .result-item {
+    background:#fff; border-radius:14px; padding:14px;
+    text-align:center; box-shadow:0 2px 8px var(--shadow);
+  }
+  .result-item .ri-label { font-size:.82rem; color:#aaa; margin-bottom:5px; }
+  .result-item .ri-value { font-size:1.2rem; color:#9B59B6; font-weight:bold; }
+
+  .submit-btn {
+    font-family:'Jua',sans-serif;
+    display:block; width:100%; padding:15px;
+    font-size:1.1rem; border:none; border-radius:18px;
+    background:linear-gradient(90deg,#C9B1FF,#FFB7C5);
+    color:#fff; cursor:pointer;
+    box-shadow:0 4px 16px var(--shadow);
+    transition:transform .2s;
+  }
+  .submit-btn:hover{transform:scale(1.02);}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+  .submit-done {
+    display:none; text-align:center; padding:20px;
+    background:#E8F8F2; border-radius:16px; margin-top:14px;
+  }
+  .submit-done.show{display:block;animation:fadeIn .4s;}
+
+  /* 결과 요약 바 */
+  .score-bar-wrap { margin:10px 0; }
+  .score-bar-label { display:flex; justify-content:space-between; font-size:.88rem; margin-bottom:4px; }
+  .score-bar-bg { height:14px; background:#EEE; border-radius:8px; overflow:hidden; }
+  .score-bar-fill { height:100%; background:linear-gradient(90deg,#FFB7C5,#C9B1FF); border-radius:8px; transition:width 1s ease; }
+
+  /* ── 최종 체크 ── */
+  .final-ck{list-style:none;padding:0;}
+  .final-ck li{display:flex;align-items:center;gap:9px;font-size:.92rem;padding:8px 0;border-bottom:1px solid #f0e8f8;cursor:pointer;}
+  .final-ck li span.ck{width:21px;height:21px;border-radius:50%;border:2px solid #C9B1FF;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+  .final-ck li.checked span.ck{background:var(--mint);border-color:#3aaa80;}
+  .final-ck li.checked{color:#aaa;text-decoration:line-through;}
+
+  /* ── 목표 ── */
+  .goal-list{list-style:none;padding:0;}
+  .goal-list li{display:flex;align-items:flex-start;gap:7px;padding:7px 0;font-size:.95rem;border-bottom:1px dashed #EDE8FF;}
+  .goal-list li::before{content:"📌";flex-shrink:0;}
+
+  @media(max-width:580px){
+    .login-card{padding:32px 22px;}
+    .login-title{font-size:1.4rem;}
+    .site-header h1{font-size:1.3rem;}
+    .card{padding:16px 13px;}
+    .organ-grid{grid-template-columns:repeat(2,1fr);}
+    .flash-grid{grid-template-columns:repeat(2,1fr);}
+    .result-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     로그인 화면
+══════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="login-emoji">🫁</span>
+    <div class="login-title">호흡계 자기주도 학습</div>
+    <div class="login-sub">2학년 과학 · Unit 2 에너지가 만드는 건강한 삶 🌸</div>
+
+    <div class="login-form">
+      <div class="login-row">
+        <div style="flex:1;">
+          <label>반 *</label>
+          <input class="login-input" id="inp-class" type="number" min="1" max="20" placeholder="예) 3">
+        </div>
+        <div style="flex:1;">
+          <label>번호 *</label>
+          <input class="login-input" id="inp-num" type="number" min="1" max="40" placeholder="예) 15">
+        </div>
+      </div>
+      <div>
+        <label>이름 *</label>
+        <input class="login-input" id="inp-name" type="text" placeholder="이름을 입력하세요" maxlength="8">
+      </div>
+      <div class="login-err" id="loginErr">⚠️ 반, 번호, 이름을 모두 입력해주세요!</div>
+      <button class="login-btn" onclick="doLogin()">🌸 학습 시작하기</button>
+    </div>
+
+    <div class="login-notice">
+      💡 입력한 정보는 학습 결과 제출 시 선생님께 전달됩니다.<br>
+      정확하게 입력해주세요 🌸
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     메인 앱
+══════════════════════════════════════ -->
+<div id="mainApp">
+
+<!-- 헤더 -->
+<header class="site-header">
+  <h1>🫁✨ 호흡계 자기주도 학습</h1>
+  <p>2학년 과학 · Unit 2 에너지가 만드는 건강한 삶</p>
+  <span class="student-badge" id="studentBadge">👤 loading...</span>
+</header>
+
+<!-- 진도 바 -->
+<div class="prog-wrap">
+  <span style="font-size:.88rem;white-space:nowrap;">🌟 진도</span>
+  <div class="prog-bg"><div class="prog-fill" id="progFill"></div></div>
+  <span style="font-size:.88rem;" id="progPct">0%</span>
+</div>
+
+<!-- 네비 -->
+<div class="nav-wrap" id="navWrap">
+  <button class="nav-btn active"  data-sec="0" onclick="goSec(0)">🌟 학습목표</button>
+  <button class="nav-btn locked" data-sec="1" onclick="goSec(1)">🫁 호흡계란?</button>
+  <button class="nav-btn locked" data-sec="2" onclick="goSec(2)">🍇 허파꽈리</button>
+  <button class="nav-btn locked" data-sec="3" onclick="goSec(3)">🔄 기체교환</button>
+  <button class="nav-btn locked" data-sec="4" onclick="goSec(4)">💨 호흡운동</button>
+  <button class="nav-btn locked" data-sec="5" onclick="goSec(5)">🃏 플래시카드</button>
+  <button class="nav-btn locked" data-sec="6" onclick="goSec(6)">✏️ 퀴즈</button>
+  <button class="nav-btn locked" data-sec="7" onclick="goSec(7)">✅ 마무리</button>
+</div>
+
+<!-- ───────── SECTION 0 ───────── -->
+<section class="section active" id="sec-0">
+  <div class="card">
+    <h2>🌟 학습 목표</h2>
+    <ul class="goal-list">
+      <li>호흡계의 구조와 기능을 설명할 수 있다.</li>
+      <li>허파꽈리의 특징과 역할을 설명할 수 있다.</li>
+      <li>폐에서의 기체 교환 과정을 설명할 수 있다.</li>
+      <li>호흡 운동의 원리(보일 법칙)를 모형과 연결하여 설명할 수 있다.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>💭 생각해보기</h3>
+    <p>우리가 숨을 쉬지 않으면 어떻게 될까요? 운동을 하면 왜 숨이 가빠질까요?</p>
+    <button class="hint-btn" onclick="openHint0()">💡 힌트 보기</button>
+    <div class="hint-box" id="hint0">
+      ✅ 세포가 에너지를 만들기 위해 산소가 필요해요! 운동하면 에너지 소비가 늘어 산소가 더 많이 필요하기 때문에 호흡이 빨라진답니다 🌸
+    </div>
+  </div>
+  <div class="card">
+    <h3>🗺️ 오늘의 학습 흐름</h3>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px;">
+      <span style="background:linear-gradient(90deg,#FFB7C5,#C9B1FF);color:#fff;border-radius:13px;padding:6px 16px;">🫁 호흡계란?</span>
+      <span style="margin-left:18px;color:#C9B1FF;">↓</span>
+      <span style="background:linear-gradient(90deg,#C9B1FF,#AED6F1);color:#fff;border-radius:13px;padding:6px 16px;">🍇 허파꽈리</span>
+      <span style="margin-left:18px;color:#C9B1FF;">↓</span>
+      <span style="background:linear-gradient(90deg,#AED6F1,#B5EAD7);color:#fff;border-radius:13px;padding:6px 16px;">🔄 기체교환</span>
+      <span style="margin-left:18px;color:#C9B1FF;">↓</span>
+      <span style="background:linear-gradient(90deg,#B5EAD7,#FFEAA7);color:#4a4a4a;border-radius:13px;padding:6px 16px;">💨 호흡운동</span>
+      <span style="margin-left:18px;color:#C9B1FF;">↓</span>
+      <span style="background:linear-gradient(90deg,#FFEAA7,#FFB7C5);color:#4a4a4a;border-radius:13px;padding:6px 16px;">🃏 플래시카드 → ✏️ 퀴즈</span>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📋 다음으로 가려면?</h3>
+    <ul class="task-list" id="tl-0">
+      <li id="t0-hint"><span>💡</span> 힌트 버튼을 눌러 확인하기<span class="tk-check"></span></li>
+    </ul>
+  </div>
+  <button class="next-btn" id="next-0" onclick="doNext(0,1)">호흡계란? 챕터로 💕 →</button>
+  <p class="lock-hint" id="lock-0">💡 힌트를 먼저 확인해주세요!</p>
+</section>
+
+<!-- ───────── SECTION 1 ───────── -->
+<section class="section" id="sec-1">
+  <div class="card">
+    <h2>🫁 학습하기 1 · 호흡계란?</h2>
+    <div class="tab-wrap">
+      <button class="tab-btn active" id="tb1-a" onclick="openTab(1,'a')">1️⃣ 호흡의 의미</button>
+      <button class="tab-btn" id="tb1-b" onclick="openTab(1,'b')">2️⃣ 호흡 기관</button>
+      <button class="tab-btn" id="tb1-c" onclick="openTab(1,'c')">3️⃣ 흉강 구조</button>
+    </div>
+    <div class="tab-content active" id="tc1-a">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;">
+        <div style="flex:1;min-width:175px;background:linear-gradient(135deg,#FFE4EC,#FFB7C5);border-radius:13px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:7px;">🌬️ 외호흡</div>
+          <p>폐에서 산소를 받아들이고 이산화탄소를 내보내는 <strong>기체 교환</strong></p>
+        </div>
+        <div style="flex:1;min-width:175px;background:linear-gradient(135deg,#EDE8FF,#C9B1FF);border-radius:13px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:7px;">⚡ 세포호흡</div>
+          <p>세포 안에서 산소로 <strong>에너지</strong>를 얻는 과정<br><small>(CO₂ + H₂O 발생)</small></p>
+        </div>
+      </div>
+      <div style="margin-top:11px;background:#FFF9FF;border-radius:9px;padding:11px;border-left:4px solid #C9B1FF;">
+        <strong>기체 교환:</strong> 몸에 필요한 <span style="color:#3498db;font-weight:bold;">산소(O₂)</span> ↔ 배출할 <span style="color:#e74c3c;font-weight:bold;">이산화탄소(CO₂)</span>
+      </div>
+    </div>
+    <div class="tab-content" id="tc1-b">
+      <h3 style="margin-top:3px;">호흡 기관을 하나씩 클릭해보세요 👆</h3>
+      <div class="organ-grid">
+        <div class="organ-card" id="oc-nose"   onclick="openOrgan('코','👃','콧속 가는 털과 끈끈한 점액으로 덮여 있어 공기 중 먼지와 세균을 걸러내요. 들어오는 공기를 따뜻하고 촉촉하게 만들어주기도 해요! 🌸','nose')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">👃</span>코</div>
+        <div class="organ-card" id="oc-tube"   onclick="openOrgan('숨관(기관)','🔵','공기가 드나드는 통로예요. 안쪽에 가는 섬모가 있어 먼지와 세균 등을 걸러낸답니다!','tube')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">🔵</span>숨관(기관)</div>
+        <div class="organ-card" id="oc-branch" onclick="openOrgan('숨관가지(기관지)','🌿','숨관에서 갈라져 좌우 폐로 들어가며, 폐 속에서 더 많은 가지로 갈라져요!','branch')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">🌿</span>숨관가지</div>
+        <div class="organ-card" id="oc-lung"   onclick="openOrgan('허파(폐)','🫁','가슴 속에 좌우 한 개씩 1쌍이 있어요. 수많은 허파꽈리로 이루어져 있답니다!','lung')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">🫁</span>허파(폐)</div>
+        <div class="organ-card" id="oc-dia"    onclick="openOrgan('가로막','⬛','근육으로 된 막으로, 호흡운동에 따라 위아래로 움직여 흉강 속 압력을 조절해요!','dia')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">⬛</span>가로막</div>
+        <div class="organ-card" id="oc-rib"    onclick="openOrgan('갈비뼈','🦴','폐를 보호하는 뼈로, 호흡운동에 따라 오르내려요!','rib')"><span style="font-size:1.8rem;display:block;margin-bottom:5px;">🦴</span>갈비뼈</div>
+      </div>
+      <div class="organ-detail" id="organDetail"><div id="organDetailInner"></div></div>
+      <div style="margin-top:13px;background:linear-gradient(135deg,#EBF5FB,#E8F8F2);border-radius:13px;padding:13px;">
+        <h3>🌬️ 들숨 시 공기 이동 경로</h3>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:9px;">
+          <span style="background:#FFB7C5;color:#fff;border-radius:9px;padding:4px 11px;">몸 밖</span>
+          <span>→</span><span style="background:#FFB7C5;color:#fff;border-radius:9px;padding:4px 11px;">👃 코</span>
+          <span>→</span><span style="background:#C9B1FF;color:#fff;border-radius:9px;padding:4px 11px;">숨관</span>
+          <span>→</span><span style="background:#AED6F1;color:#fff;border-radius:9px;padding:4px 11px;">숨관가지</span>
+          <span>→</span><span style="background:#B5EAD7;color:#3a8a6a;border-radius:9px;padding:4px 11px;">🫁 폐</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="tc1-c">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;align-items:center;">
+        <svg viewBox="0 0 260 280" style="width:100%;max-width:240px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="130" cy="50"  rx="90" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="130" cy="78"  rx="95" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="130" cy="106" rx="98" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="130" cy="134" rx="98" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="130" cy="162" rx="95" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="130" cy="190" rx="90" ry="16" fill="#FFEAA7" stroke="#F0C040" stroke-width="2"/>
+          <ellipse cx="95"  cy="128" rx="43" ry="70" fill="#FFB7C5" opacity=".72"/>
+          <ellipse cx="165" cy="128" rx="43" ry="70" fill="#FFB7C5" opacity=".72"/>
+          <path d="M40 228 Q130 260 220 228" stroke="#C9B1FF" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <text x="130" y="16"  text-anchor="middle" font-family="Jua" font-size="12" fill="#9a7a00">갈비뼈</text>
+          <text x="130" y="118" text-anchor="middle" font-family="Jua" font-size="13" fill="#c04080">🫁 허파</text>
+          <text x="130" y="273" text-anchor="middle" font-family="Jua" font-size="12" fill="#7a50c0">가로막</text>
+          <text x="130" y="148" text-anchor="middle" font-family="Jua" font-size="10" fill="#aaa">흉강</text>
+        </svg>
+        <div style="flex:1;min-width:170px;display:flex;flex-direction:column;gap:9px;">
+          <div style="background:#FFEAA7;border-radius:9px;padding:11px;"><strong>🦴 갈비뼈</strong><br>폐를 보호. 호흡운동 시 위아래로 움직여요.</div>
+          <div style="background:#FFE4EC;border-radius:9px;padding:11px;"><strong>🫁 흉강</strong><br>갈비뼈+가로막으로 둘러싸인 공간. 허파가 여기에!</div>
+          <div style="background:#EDE8FF;border-radius:9px;padding:11px;"><strong>⬛ 가로막</strong><br>근육으로 된 막. 호흡운동으로 흉강 압력 조절!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📋 완료해야 다음으로 갈 수 있어요!</h3>
+    <ul class="task-list" id="tl-1">
+      <li id="t1-taba"><span>1️⃣</span> '호흡의 의미' 탭 열기<span class="tk-check"></span></li>
+      <li id="t1-tabb"><span>2️⃣</span> '호흡 기관' 탭 열기<span class="tk-check"></span></li>
+      <li id="t1-organs"><span>👆</span> 호흡 기관 카드 6개 모두 클릭 (<span id="organCnt">0</span>/6)<span class="tk-check"></span></li>
+      <li id="t1-tabc"><span>3️⃣</span> '흉강 구조' 탭 열기<span class="tk-check"></span></li>
+    </ul>
+  </div>
+  <button class="next-btn" id="next-1" onclick="doNext(1,2)">허파꽈리 챕터로 💕 →</button>
+  <p class="lock-hint" id="lock-1">📋 위의 활동을 모두 완료해야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 2 ───────── -->
+<section class="section" id="sec-2">
+  <div class="card">
+    <h2>🍇 학습하기 2 · 허파꽈리</h2>
+    <div class="tab-wrap">
+      <button class="tab-btn active" id="tb2-a" onclick="openTab(2,'a')">🍇 허파꽈리란?</button>
+      <button class="tab-btn" id="tb2-b" onclick="openTab(2,'b')">📊 표면적의 비밀</button>
+      <button class="tab-btn" id="tb2-c" onclick="openTab(2,'c')">🚬 흡연의 영향</button>
+    </div>
+    <div class="tab-content active" id="tc2-a">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;align-items:center;">
+        <svg viewBox="0 0 200 200" style="width:100%;max-width:200px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 100 Q50 60 80 100 Q110 140 140 100 Q170 60 190 100" stroke="#AED6F1" stroke-width="7" fill="none" opacity=".6"/>
+          <path d="M20 120 Q50 80 80 120 Q110 160 140 120 Q170 80 190 120" stroke="#FFB7C5" stroke-width="7" fill="none" opacity=".6"/>
+          <circle cx="60" cy="80" r="27" fill="#FFE4EC" stroke="#FFB7C5" stroke-width="2"/>
+          <circle cx="120" cy="70" r="22" fill="#FFE4EC" stroke="#FFB7C5" stroke-width="2"/>
+          <circle cx="155" cy="94" r="26" fill="#FFE4EC" stroke="#FFB7C5" stroke-width="2"/>
+          <circle cx="80" cy="127" r="19" fill="#FFE4EC" stroke="#FFB7C5" stroke-width="2"/>
+          <circle cx="40" cy="137" r="16" fill="#FFE4EC" stroke="#FFB7C5" stroke-width="2"/>
+          <text x="60" y="83" text-anchor="middle" font-size="12" fill="#3498db">O₂</text>
+          <text x="155" y="98" text-anchor="middle" font-size="10" fill="#e74c3c">CO₂</text>
+          <text x="100" y="192" text-anchor="middle" font-family="Jua" font-size="11" fill="#9B59B6">허파꽈리 + 모세혈관</text>
+        </svg>
+        <div style="flex:1;min-width:170px;display:flex;flex-direction:column;gap:9px;">
+          <div style="background:#FFE4EC;border-radius:11px;padding:13px;"><strong>🍇 허파꽈리란?</strong><br>포도알처럼 생긴 작은 공기 주머니. 한 층의 얇은 막!</div>
+          <div style="background:#EDE8FF;border-radius:11px;padding:13px;"><strong>🩸 모세혈관</strong><br>허파꽈리 표면을 둘러싸고 있어요. 기체 교환 발생!</div>
+          <div style="background:#E8F8F2;border-radius:11px;padding:13px;"><strong>🔢 개수</strong><br>약 <strong>3억 개 이상</strong>의 허파꽈리! 🤯</div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="tc2-b">
+      <h3>아래 두 폐를 클릭해 비교해보세요! 👆</h3>
+      <div class="alv-compare">
+        <div class="alv-box ga" onclick="clickAlv('ga')">
+          <h4>(가) 수많은 허파꽈리 🌸</h4>
+          <div class="alv-vis" id="alv-vis-ga"></div>
+          <div class="alv-info" id="alv-info-ga">✅ 표면적이 매우 넓어요!<br>✅ 기체 교환이 효율적!<br>💡 모두 펼치면 약 100㎡!</div>
+        </div>
+        <div class="alv-box na" onclick="clickAlv('na')">
+          <h4>(나) 큰 공기주머니 😰</h4>
+          <div class="alv-vis" id="alv-vis-na"></div>
+          <div class="alv-info" id="alv-info-na">❌ 표면적이 좁아요.<br>❌ 기체 교환 효율 저하!<br>😰 산소를 충분히 흡수 못해요!</div>
+        </div>
+      </div>
+      <div style="margin-top:11px;background:#FFF9FF;border-radius:9px;padding:11px;border-left:4px solid #C9B1FF;font-size:.9rem;line-height:1.7;">
+        📌 허파꽈리가 많을수록 표면적이 넓어져 <strong>효율적으로 기체 교환</strong>할 수 있어요!
+      </div>
+    </div>
+    <div class="tab-content" id="tc2-c">
+      <h3>🚬 흡연이 허파꽈리에 미치는 영향</h3>
+      <div class="smoke-compare">
+        <div class="smoke-box h" onclick="clickSmoke('h')">
+          <div style="font-size:2rem;">🫁</div><h4 style="margin-top:7px;">건강한 폐 (가)</h4>
+          <div class="smoke-detail" id="sd-h">✅ 허파꽈리 작고 많음<br>✅ 표면적 넓음<br>✅ 기체 교환 효율적!</div>
+        </div>
+        <div class="smoke-box s" onclick="clickSmoke('s')">
+          <div style="font-size:2rem;">🖤</div><h4 style="margin-top:7px;">흡연자의 폐 (나)</h4>
+          <div class="smoke-detail" id="sd-s">❌ 허파꽈리 벽 손상·파괴<br>❌ 여러 개가 합쳐져 큰 공간<br>❌ 표면적 크게 감소<br>⚠️ 만성 폐쇄성 폐질환 위험!</div>
+        </div>
+      </div>
+      <table class="tb" style="margin-top:13px;">
+        <tr><th>변화</th><th>내용</th></tr>
+        <tr><td>허파꽈리 파괴</td><td>벽이 손상되어 여러 개가 합쳐짐</td></tr>
+        <tr><td>표면적 감소</td><td>기체 교환 전체 면적 크게 감소</td></tr>
+        <tr><td>기체 교환 효율↓</td><td>산소를 충분히 흡수하지 못함</td></tr>
+        <tr><td>질환 위험</td><td>만성 폐쇄성 폐질환(COPD)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>✏️ 빈칸 채우기</h3>
+    <div class="blank-wrap">
+      허파꽈리는 포도알처럼 생긴 작은 <input class="blank-inp" id="b1" placeholder="?"> 로,
+      표면이 <input class="blank-inp" id="b2" placeholder="?"> 으로 둘러싸여 있어
+      <input class="blank-inp" id="b3" placeholder="?"> 이/가 일어납니다.
+      약 3억 개 이상의 허파꽈리로 인해 <input class="blank-inp" id="b4" placeholder="?"> 이/가 매우 넓어요.
+    </div>
+    <button class="check-btn" onclick="checkBlanks()">✅ 정답 확인</button>
+    <div id="blank-fb" style="margin-top:9px;font-size:.9rem;display:none;padding:9px 13px;border-radius:9px;"></div>
+  </div>
+  <div class="card">
+    <h3>📋 완료해야 다음으로 갈 수 있어요!</h3>
+    <ul class="task-list" id="tl-2">
+      <li id="t2-taba"><span>🍇</span> '허파꽈리란?' 탭 열기<span class="tk-check"></span></li>
+      <li id="t2-tabb"><span>📊</span> '표면적의 비밀' 탭 열기<span class="tk-check"></span></li>
+      <li id="t2-alv"><span>👆</span> (가)와 (나) 폐 모두 클릭 (<span id="alvCnt">0</span>/2)<span class="tk-check"></span></li>
+      <li id="t2-tabc"><span>🚬</span> '흡연의 영향' 탭 열기<span class="tk-check"></span></li>
+      <li id="t2-blank"><span>✏️</span> 빈칸 채우기 정답 맞히기<span class="tk-check"></span></li>
+    </ul>
+  </div>
+  <button class="next-btn" id="next-2" onclick="doNext(2,3)">기체교환 챕터로 💕 →</button>
+  <p class="lock-hint" id="lock-2">📋 위의 활동을 모두 완료해야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 3 ───────── -->
+<section class="section" id="sec-3">
+  <div class="card">
+    <h2>🔄 학습하기 3 · 기체 교환</h2>
+    <div class="tab-wrap">
+      <button class="tab-btn active" id="tb3-a" onclick="openTab(3,'a')">🫁 폐에서 교환</button>
+      <button class="tab-btn" id="tb3-b" onclick="openTab(3,'b')">🏃 온몸에서 교환</button>
+      <button class="tab-btn" id="tb3-c" onclick="openTab(3,'c')">🎬 애니메이션</button>
+    </div>
+    <div class="tab-content active" id="tc3-a">
+      <div style="background:linear-gradient(135deg,#EBF5FB,#E8F8F2);border-radius:13px;padding:13px;margin-top:7px;">
+        <p>장소: <strong>허파꽈리</strong>와 모세혈관 사이 &nbsp;|&nbsp; 순환: <strong>허파순환</strong></p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:13px;align-items:center;">
+        <div style="text-align:center;"><div style="background:#FFE4EC;border-radius:50%;width:105px;height:105px;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid #FFB7C5;margin:0 auto;"><span style="font-size:.95rem;">🍇 허파꽈리</span><span style="font-size:.72rem;margin-top:3px;">O₂ 높음</span><span style="font-size:.72rem;">CO₂ 낮음</span></div></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;align-items:center;gap:3px;"><span style="color:#3498db;font-weight:bold;font-size:1.15rem;">O₂</span><span>→</span></div><div style="display:flex;align-items:center;gap:3px;"><span>←</span><span style="color:#e74c3c;font-weight:bold;font-size:1.15rem;">CO₂</span></div></div>
+        <div style="text-align:center;"><div style="background:#EBF5FB;border-radius:50%;width:105px;height:105px;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid #AED6F1;margin:0 auto;"><span style="font-size:.9rem;">🩸 모세혈관</span><span style="font-size:.72rem;margin-top:3px;">O₂ 낮음</span><span style="font-size:.72rem;">CO₂ 높음</span></div></div>
+      </div>
+      <div style="margin-top:11px;background:#FFF9FF;border-radius:9px;padding:11px;border-left:4px solid #3498db;font-size:.9rem;">
+        💡 기체는 농도가 <strong>높은</strong> 곳 → <strong>낮은</strong> 곳으로 이동해요!
+      </div>
+    </div>
+    <div class="tab-content" id="tc3-b">
+      <div style="background:linear-gradient(135deg,#FFF5E4,#FFEAA7);border-radius:13px;padding:13px;margin-top:7px;">
+        <p>장소: <strong>조직세포</strong>와 모세혈관 사이 &nbsp;|&nbsp; 순환: <strong>온몸순환</strong></p>
+      </div>
+      <table class="tb" style="margin-top:11px;">
+        <tr><th>기체</th><th>폐포</th><th>모세혈관</th><th>조직세포</th><th>이동 방향</th></tr>
+        <tr><td>O₂</td><td>높음</td><td>중간</td><td>낮음</td><td style="color:#3498db;">폐포→모세혈관→조직세포</td></tr>
+        <tr><td>CO₂</td><td>낮음</td><td>중간</td><td>높음</td><td style="color:#e74c3c;">조직세포→모세혈관→폐포</td></tr>
+      </table>
+    </div>
+    <div class="tab-content" id="tc3-c">
+      <h3>🎬 기체교환 애니메이션</h3>
+      <p style="font-size:.86rem;margin-bottom:9px;">버튼 3개를 모두 눌러 확인해보세요! 👀</p>
+      <div class="breath-btn-wrap">
+        <button class="bbtn inhale"   onclick="gasAnim('lung')"  >🫁 폐에서 교환</button>
+        <button class="bbtn exhale"   onclick="gasAnim('tissue')">🔬 조직에서 교환</button>
+        <button class="bbtn autoplay" onclick="gasAnim('all')"   >🔄 전체 순환</button>
+      </div>
+      <canvas id="gasCanvas" class="gas-canvas" height="260"></canvas>
+      <div id="gasDesc" style="margin-top:7px;padding:9px 13px;background:#FFF9FF;border-radius:9px;font-size:.9rem;line-height:1.6;min-height:40px;"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📋 완료해야 다음으로 갈 수 있어요!</h3>
+    <ul class="task-list" id="tl-3">
+      <li id="t3-taba"><span>🫁</span> '폐에서 교환' 탭 열기<span class="tk-check"></span></li>
+      <li id="t3-tabb"><span>🏃</span> '온몸에서 교환' 탭 열기<span class="tk-check"></span></li>
+      <li id="t3-tabc"><span>🎬</span> 애니메이션 탭 열기<span class="tk-check"></span></li>
+      <li id="t3-anim"><span>👆</span> 애니메이션 버튼 3개 모두 눌러보기 (<span id="gasCnt">0</span>/3)<span class="tk-check"></span></li>
+    </ul>
+  </div>
+  <button class="next-btn" id="next-3" onclick="doNext(3,4)">호흡운동 챕터로 💕 →</button>
+  <p class="lock-hint" id="lock-3">📋 위의 활동을 모두 완료해야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 4 ───────── -->
+<section class="section" id="sec-4">
+  <div class="card">
+    <h2>💨 학습하기 4 · 호흡 운동</h2>
+    <div class="model-banner">
+      <div class="mb-icon">🧪</div>
+      <div class="mb-text">
+        아래 애니메이션을 통해 호흡 운동 원리를 확인해도 좋지만,<br>
+        <strong>직접 해보고 싶은 친구들은 앞에 있는 모형을 가져가서 직접 해봐도 좋아요! 🙌</strong><br>
+        <span style="font-size:.86rem;">고무막을 당기고 밀면서 들숨·날숨을 느껴보세요!</span>
+      </div>
+    </div>
+    <div class="tab-wrap">
+      <button class="tab-btn active" id="tb4-a" onclick="openTab(4,'a')">⚖️ 보일 법칙</button>
+      <button class="tab-btn" id="tb4-b" onclick="openTab(4,'b')">📊 들숨·날숨 원리</button>
+      <button class="tab-btn" id="tb4-c" onclick="openTab(4,'c')">🧪 모형 실험</button>
+      <button class="tab-btn" id="tb4-d" onclick="openTab(4,'d')">🎬 애니메이션</button>
+    </div>
+    <div class="tab-content active" id="tc4-a">
+      <div style="background:linear-gradient(135deg,#EDE8FF,#C9B1FF);border-radius:13px;padding:15px;margin-top:7px;color:#fff;text-align:center;">
+        <div style="font-size:1.15rem;margin-bottom:7px;">부피 ↑ ↔ 압력 ↓ &nbsp;(반비례)</div>
+        <div style="font-size:.97rem;">압력 ↑ ↔ 부피 ↓</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:13px;">
+        <div style="text-align:center;">
+          <svg viewBox="0 0 120 150" style="width:105px;" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="80" height="100" rx="13" fill="#EDE8FF" stroke="#C9B1FF" stroke-width="2"/>
+            <circle cx="60" cy="70" r="27" fill="#C9B1FF" opacity=".7"/>
+            <text x="60" y="145" text-anchor="middle" font-family="Jua" font-size="11" fill="#9B59B6">부피 클 때</text>
+            <text x="60" y="74" text-anchor="middle" font-family="Jua" font-size="10" fill="#fff">압력 낮음</text>
+          </svg>
+        </div>
+        <div style="display:flex;align-items:center;font-size:1.8rem;color:#C9B1FF;">⇌</div>
+        <div style="text-align:center;">
+          <svg viewBox="0 0 120 150" style="width:105px;" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="80" height="100" rx="13" fill="#EDE8FF" stroke="#C9B1FF" stroke-width="2"/>
+            <circle cx="60" cy="70" r="13" fill="#9B59B6" opacity=".85"/>
+            <text x="60" y="145" text-anchor="middle" font-family="Jua" font-size="11" fill="#9B59B6">부피 작을 때</text>
+            <text x="60" y="74" text-anchor="middle" font-family="Jua" font-size="10" fill="#fff">압력 높음</text>
+          </svg>
+        </div>
+      </div>
+      <div style="margin-top:11px;background:#FFF9FF;border-radius:9px;padding:11px;border-left:4px solid #C9B1FF;font-size:.9rem;line-height:1.7;">
+        💡 공기는 압력이 <strong>높은 곳 → 낮은 곳</strong>으로 이동해요!<br>
+        📌 허파는 <strong>근육이 없어</strong> 스스로 움직일 수 없어요.<br>
+        → <strong>가로막</strong>과 <strong>갈비뼈</strong>의 움직임으로 호흡 운동!
+      </div>
+    </div>
+    <div class="tab-content" id="tc4-b">
+      <table class="tb" style="margin-top:9px;">
+        <tr><th>구분</th><th>💨 들숨</th><th>💨 날숨</th></tr>
+        <tr><td>가로막</td><td>⬇️ 내려감</td><td>⬆️ 올라감</td></tr>
+        <tr><td>갈비뼈</td><td>⬆️ 올라감</td><td>⬇️ 내려감</td></tr>
+        <tr><td>흉강 부피</td><td>🔼 증가</td><td>🔽 감소</td></tr>
+        <tr><td>허파 부피</td><td>🔼 증가</td><td>🔽 감소</td></tr>
+        <tr><td>흉강 압력</td><td>대기압보다 낮음</td><td>대기압보다 높음</td></tr>
+        <tr><td>공기 이동</td><td>밖 → 허파</td><td>허파 → 밖</td></tr>
+      </table>
+    </div>
+    <div class="tab-content" id="tc4-c">
+      <h3>🧪 모형 분석</h3>
+      <table class="tb" style="margin-top:9px;">
+        <tr><th>모형 부품</th><th>실제 구조</th></tr>
+        <tr><td>Y자관</td><td>숨관 + 숨관가지</td></tr>
+        <tr><td>고무풍선</td><td>허파(폐)</td></tr>
+        <tr><td>고무막</td><td>가로막</td></tr>
+        <tr><td>유리병 속 공간</td><td>흉강</td></tr>
+      </table>
+      <div style="display:flex;gap:11px;margin-top:13px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:170px;background:linear-gradient(135deg,#EBF5FB,#AED6F1);border-radius:11px;padding:13px;">
+          <h4>고무막 ⬇️ 아래로 당기면</h4>
+          <p style="margin-top:5px;">→ 풍선 <strong>커짐</strong> = 들숨</p>
+          <p style="font-size:.81rem;color:#666;margin-top:3px;">흉강 부피↑ → 압력↓ → 공기 유입</p>
+        </div>
+        <div style="flex:1;min-width:170px;background:linear-gradient(135deg,#FFE4EC,#FFB7C5);border-radius:11px;padding:13px;">
+          <h4>고무막 ⬆️ 위로 올리면</h4>
+          <p style="margin-top:5px;">→ 풍선 <strong>작아짐</strong> = 날숨</p>
+          <p style="font-size:.81rem;color:#666;margin-top:3px;">흉강 부피↓ → 압력↑ → 공기 배출</p>
+        </div>
+      </div>
+      <div style="margin-top:11px;background:#FFEAA7;border-radius:9px;padding:11px;border-left:4px solid #F0C040;font-size:.9rem;">
+        ⚠️ 모형에서는 <strong>갈비뼈 움직임</strong>이 재현되지 않아요!
+      </div>
+    </div>
+    <div class="tab-content" id="tc4-d">
+      <h3>🎬 들숨·날숨 애니메이션</h3>
+      <p style="font-size:.86rem;margin-bottom:3px;">들숨·날숨·자동 버튼을 모두 눌러보세요!</p>
+      <div class="breath-btn-wrap">
+        <button class="bbtn inhale"   onclick="doBreath('inhale')">💨 들숨</button>
+        <button class="bbtn exhale"   onclick="doBreath('exhale')">💨 날숨</button>
+        <button class="bbtn autoplay" onclick="toggleBreathAuto()">🔄 자동</button>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-top:5px;">
+        <canvas id="breathCanvas" width="200" height="210" style="display:block;margin:0 auto;"></canvas>
+        <div style="flex:1;min-width:170px;display:flex;flex-direction:column;gap:7px;justify-content:center;">
+          <div style="background:#EDE8FF;border-radius:9px;padding:9px;font-size:.9rem;"><strong>가로막:</strong> <span id="bi-g">-</span></div>
+          <div style="background:#FFE4EC;border-radius:9px;padding:9px;font-size:.9rem;"><strong>갈비뼈:</strong> <span id="bi-b">-</span></div>
+          <div style="background:#E8F8F2;border-radius:9px;padding:9px;font-size:.9rem;"><strong>흉강 부피:</strong> <span id="bi-v">-</span></div>
+          <div style="background:#FFEAA7;border-radius:9px;padding:9px;font-size:.9rem;"><strong>흉강 압력:</strong> <span id="bi-p">-</span></div>
+          <div style="background:#AED6F1;border-radius:9px;padding:9px;font-size:.9rem;"><strong>공기 이동:</strong> <span id="bi-a">-</span></div>
+        </div>
+      </div>
+      <div style="margin-top:9px;background:#FFF9FF;border-radius:9px;padding:9px;font-size:.86rem;color:#888;">
+        💡 건강한 성인은 1분에 약 12~20회 호흡, 한 번에 약 500mL!
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📋 완료해야 다음으로 갈 수 있어요!</h3>
+    <ul class="task-list" id="tl-4">
+      <li id="t4-taba"><span>⚖️</span> '보일 법칙' 탭 열기<span class="tk-check"></span></li>
+      <li id="t4-tabb"><span>📊</span> '들숨·날숨 원리' 탭 열기<span class="tk-check"></span></li>
+      <li id="t4-tabc"><span>🧪</span> '모형 실험' 탭 열기<span class="tk-check"></span></li>
+      <li id="t4-tabd"><span>🎬</span> '애니메이션' 탭 열기<span class="tk-check"></span></li>
+      <li id="t4-anim"><span>👆</span> 들숨·날숨·자동 버튼 모두 눌러보기 (<span id="breathCnt">0</span>/3)<span class="tk-check"></span></li>
+    </ul>
+  </div>
+  <button class="next-btn" id="next-4" onclick="doNext(4,5)">플래시카드 챕터로 💕 →</button>
+  <p class="lock-hint" id="lock-4">📋 위의 활동을 모두 완료해야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 5 ───────── -->
+<section class="section" id="sec-5">
+  <div class="card">
+    <h2>🃏 핵심 용어 플래시카드</h2>
+    <p style="margin-bottom:13px;font-size:.9rem;">카드를 클릭하면 뒤집혀요! 12개 카드를 모두 뒤집어야 다음으로 갈 수 있어요 🌸</p>
+    <div class="flash-grid" id="flashGrid"></div>
+    <div style="margin-top:13px;text-align:center;">
+      <button onclick="resetFlash()" style="font-family:'Jua',sans-serif;background:none;border:2px solid #C9B1FF;border-radius:11px;padding:6px 16px;color:#9B59B6;cursor:pointer;font-size:.86rem;">🔄 전체 초기화</button>
+    </div>
+    <div id="flashProg" style="text-align:center;margin-top:9px;font-size:.9rem;color:#888;">0 / 12 완료</div>
+  </div>
+  <button class="next-btn" id="next-5" onclick="doNext(5,6)">퀴즈 도전 💕 →</button>
+  <p class="lock-hint" id="lock-5">🃏 카드 12개를 모두 뒤집어야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 6 ───────── -->
+<section class="section" id="sec-6">
+  <div class="card">
+    <h2>✏️ 확인 퀴즈</h2>
+    <p style="margin-bottom:13px;font-size:.9rem;">6문제를 모두 풀어야 다음으로 갈 수 있어요! 🌸</p>
+    <div id="quizArea"></div>
+    <div class="quiz-score-box" id="quizScoreBox"></div>
+  </div>
+  <button class="next-btn" id="next-6" onclick="doNext(6,7)">마무리하기 💕 →</button>
+  <p class="lock-hint" id="lock-6">✏️ 퀴즈 6문제를 모두 풀어야 넘어갈 수 있어요!</p>
+</section>
+
+<!-- ───────── SECTION 7 : 마무리 + 결과 제출 ───────── -->
+<section class="section" id="sec-7">
+  <div class="card">
+    <div class="done-wrap">
+      <span class="done-emoji">🫁</span>
+      <div style="font-size:1.8rem;color:#9B59B6;margin:10px 0 5px;">학습 완료! 수고했어요! 💕</div>
+      <p style="color:#aaa;font-size:.92rem;">호흡계 자기주도 학습을 마쳤습니다 🌸</p>
+    </div>
+  </div>
+
+  <!-- 결과 요약 -->
+  <div class="result-card">
+    <div class="result-title">📊 나의 학습 결과</div>
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="ri-label">👤 이름</div>
+        <div class="ri-value" id="res-name">-</div>
+      </div>
+      <div class="result-item">
+        <div class="ri-label">🏫 반 · 번호</div>
+        <div class="ri-value" id="res-class">-</div>
+      </div>
+      <div class="result-item">
+        <div class="ri-label">✏️ 퀴즈 점수</div>
+        <div class="ri-value" id="res-score">-</div>
+      </div>
+      <div class="result-item">
+        <div class="ri-label">⏱️ 학습 시간</div>
+        <div class="ri-value" id="res-time">-</div>
+      </div>
+    </div>
+
+    <!-- 퀴즈 정답률 바 -->
+    <div class="score-bar-wrap">
+      <div class="score-bar-label">
+        <span>퀴즈 정답률</span>
+        <span id="res-pct">0%</span>
+      </div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill" id="res-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- 챕터 완료 현황 -->
+    <div style="margin-top:16px;">
+      <h3 style="font-size:1rem;color:#9B59B6;margin-bottom:10px;">📚 챕터 완료 현황</h3>
+      <div id="chapterStatus" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- 제출 카드 -->
+  <div class="card">
+    <h3>📤 선생님께 결과 제출하기</h3>
+    <p style="font-size:.9rem;color:#888;margin-bottom:16px;line-height:1.7;">
+      아래 버튼을 누르면 학습 결과가 선생님께 전달돼요! 🌸<br>
+      제출 전 결과를 한 번 더 확인해주세요.
+    </p>
+    <button class="submit-btn" id="submitBtn" onclick="submitResult()">
+      📤 선생님께 결과 제출하기
+    </button>
+    <div class="submit-done" id="submitDone">
+      <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+      <div style="font-size:1.1rem;color:#27ae60;margin-bottom:5px;">제출 완료!</div>
+      <div style="font-size:.9rem;color:#888;">선생님께 결과가 전달되었어요 🌸<br>수고했어요!</div>
+    </div>
+
+    <!-- 직접 확인용 텍스트 결과 -->
+    <div style="margin-top:20px;padding:14px;background:#F8F4FF;border-radius:13px;border:2px dashed #C9B1FF;">
+      <div style="font-size:.88rem;color:#9B59B6;margin-bottom:8px;">📋 제출 내용 미리보기</div>
+      <div id="submitPreview" style="font-size:.86rem;color:#666;line-height:2;"></div>
+    </div>
+  </div>
+
+  <!-- 최종 체크리스트 -->
+  <div class="card">
+    <h2>✅ 학습 완료 체크리스트</h2>
+    <p style="font-size:.9rem;margin-bottom:11px;">오늘 배운 내용을 스스로 점검해봐요!</p>
+    <ul class="final-ck">
+      <li onclick="finalCheck(this)"><span class="ck"></span> 호흡계를 구성하는 기관(코·숨관·숨관가지·허파)을 말할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 허파꽈리의 구조와 역할을 설명할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 허파꽈리가 많아 표면적이 넓은 이유를 설명할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 폐에서의 기체 교환 과정(O₂·CO₂ 이동)을 설명할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 온몸에서의 기체 교환 과정을 설명할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 보일 법칙을 호흡 운동에 연결하여 설명할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 들숨과 날숨 시 가로막·갈비뼈의 움직임을 말할 수 있다.</li>
+      <li onclick="finalCheck(this)"><span class="ck"></span> 모형 실험과 실제 호흡 운동의 차이를 설명할 수 있다.</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /mainApp -->
+
+<script>
+/* ════════════════════════════════
+   학생 정보
+════════════════════════════════ */
+let student = { cls:'', num:'', name:'' };
+let startTime = null;
+let quizScore = 0;
+let quizDone  = new Set();
+
+function doLogin() {
+  const cls  = document.getElementById('inp-class').value.trim();
+  const num  = document.getElementById('inp-num').value.trim();
+  const name = document.getElementById('inp-name').value.trim();
+  const err  = document.getElementById('loginErr');
+
+  [document.getElementById('inp-class'),
+   document.getElementById('inp-num'),
+   document.getElementById('inp-name')].forEach(el => el.classList.remove('err'));
+
+  if (!cls || !num || !name) {
+    err.style.display = 'block';
+    if (!cls) document.getElementById('inp-class').classList.add('err');
+    if (!num) document.getElementById('inp-num').classList.add('err');
+    if (!name) document.getElementById('inp-name').classList.add('err');
+    return;
+  }
+  err.style.display = 'none';
+  student = { cls, num, name };
+  startTime = new Date();
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('studentBadge').textContent =
+    `👤 ${cls}반 ${num}번 ${name}`;
+
+  renderFlash();
+  renderQuiz();
+  drawBreath(0);
+  setTimeout(drawAlveoli, 400);
+}
+
+/* ════════════════════════════════
+   전역 상태
+════════════════════════════════ */
+let unlocked = 0;
+const S = {
+  0:{ hint:false },
+  1:{ taba:false, tabb:false, organs:0, tabc:false },
+  2:{ taba:false, tabb:false, alv:0, tabc:false, blank:false },
+  3:{ taba:false, tabb:false, tabc:false, anim:0 },
+  4:{ taba:false, tabb:false, tabc:false, tabd:false, anim:0 },
+};
+const CHAPTER_NAMES = ['학습목표','호흡계란?','허파꽈리','기체교환','호흡운동','플래시카드','퀴즈','마무리'];
+
+/* ════════════════════════════════
+   섹션 이동
+════════════════════════════════ */
+function goSec(n) {
+  if (n > unlocked) return;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + n).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function doNext(cur, nxt) {
+  if (!document.getElementById('next-' + cur).classList.contains('on')) return;
+  if (nxt > unlocked) {
+    unlocked = nxt;
+    const nb = document.querySelectorAll('.nav-btn')[nxt];
+    nb.classList.remove('locked');
+  }
+  updateProgress();
+  goSec(nxt);
+  if (nxt === 7) buildResult();
+}
+
+function updateProgress() {
+  const pct = Math.round(unlocked / 7 * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent  = pct + '%';
+  document.querySelectorAll('.nav-btn').forEach((b,i) => {
+    if (i < unlocked) b.classList.add('done');
+    if (i <= unlocked) b.classList.remove('locked');
+  });
+}
+
+/* ════════════════════════════════
+   잠금 해제 검사
+════════════════════════════════ */
+function checkSec(n) {
+  let ok = false;
+  switch(n) {
+    case 0: ok = S[0].hint; break;
+    case 1: ok = S[1].taba && S[1].tabb && S[1].organs>=6 && S[1].tabc; break;
+    case 2: ok = S[2].taba && S[2].tabb && S[2].alv>=2 && S[2].tabc && S[2].blank; break;
+    case 3: ok = S[3].taba && S[3].tabb && S[3].tabc && S[3].anim>=3; break;
+    case 4: ok = S[4].taba && S[4].tabb && S[4].tabc && S[4].tabd && S[4].anim>=3; break;
+  }
+  const btn = document.getElementById('next-' + n);
+  const lk  = document.getElementById('lock-' + n);
+  if (btn) {
+    btn.classList.toggle('on', ok);
+    if (lk) lk.style.display = ok ? 'none' : 'block';
+  }
+}
+
+function markTask(id) {
+  const li = document.getElementById(id);
+  if (!li || li.classList.contains('done-item')) return;
+  li.classList.add('done-item');
+  li.querySelector('.tk-check').textContent = '✅';
+}
+
+/* ════════════════════════════════
+   섹션 0 힌트
+════════════════════════════════ */
+function openHint0() {
+  document.getElementById('hint0').classList.add('show');
+  if (!S[0].hint) {
+    S[0].hint = true;
+    markTask('t0-hint');
+    checkSec(0);
+  }
+}
+
+/* ════════════════════════════════
+   탭
+════════════════════════════════ */
+const tabMap = {
+  '1a':['t1-taba','cl1'], '1b':['t1-tabb','cl1'], '1c':['t1-tabc','cl1'],
+  '2a':['t2-taba','cl2'], '2b':['t2-tabb','cl2'], '2c':['t2-tabc','cl2'],
+  '3a':['t3-taba','cl3'], '3b':['t3-tabb','cl3'], '3c':['t3-tabc','cl3'],
+  '4a':['t4-taba','cl4'], '4b':['t4-tabb','cl4'], '4c':['t4-tabc','cl4'], '4d':['t4-tabd','cl4'],
+};
+const sMap = {
+  't1-taba':()=>{S[1].taba=true;},  't1-tabb':()=>{S[1].tabb=true;},  't1-tabc':()=>{S[1].tabc=true;},
+  't2-taba':()=>{S[2].taba=true;},  't2-tabb':()=>{S[2].tabb=true;},  't2-tabc':()=>{S[2].tabc=true;},
+  't3-taba':()=>{S[3].taba=true;},  't3-tabb':()=>{S[3].tabb=true;},  't3-tabc':()=>{S[3].tabc=true;},
+  't4-taba':()=>{S[4].taba=true;},  't4-tabb':()=>{S[4].tabb=true;},  't4-tabc':()=>{S[4].tabc=true;}, 't4-tabd':()=>{S[4].tabd=true;},
+};
+
+function openTab(sec, key) {
+  document.querySelectorAll('[id^="tc'+sec+'-"]').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tc'+sec+'-'+key).classList.add('active');
+  document.querySelectorAll('[id^="tb'+sec+'-"]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tb'+sec+'-'+key).classList.add('active');
+
+  const tk = sec+''+key;
+  const info = tabMap[tk];
+  if (info) {
+    const tid = info[0];
+    if (sMap[tid]) sMap[tid]();
+    markTask(tid);
+    checkSec(sec);
+  }
+  if (sec===3 && key==='c') setTimeout(()=>{ const c=document.getElementById('gasCanvas'); if(c) c.width=c.offsetWidth; },100);
+}
+
+/* ════════════════════════════════
+   호흡기관
+════════════════════════════════ */
+const organVisited = new Set();
+function openOrgan(name, icon, desc, key) {
+  document.getElementById('organDetailInner').innerHTML =
+    '<strong>'+icon+' '+name+'</strong><br><br>'+desc;
+  document.getElementById('organDetail').classList.add('show');
+  if (!organVisited.has(key)) {
+    organVisited.add(key);
+    const card = document.getElementById('oc-'+key);
+    if (card) card.classList.add('visited');
+    S[1].organs = organVisited.size;
+    document.getElementById('organCnt').textContent = S[1].organs;
+    if (S[1].organs >= 6) markTask('t1-organs');
+    checkSec(1);
+  }
+}
+
+/* ════════════════════════════════
+   허파꽈리
+════════════════════════════════ */
+const alvClicked = new Set();
+function clickAlv(id) {
+  document.getElementById('alv-info-'+id).classList.toggle('show');
+  if (!alvClicked.has(id)) {
+    alvClicked.add(id);
+    S[2].alv = alvClicked.size;
+    document.getElementById('alvCnt').textContent = S[2].alv;
+    if (S[2].alv >= 2) markTask('t2-alv');
+    checkSec(2);
+  }
+}
+
+function drawAlveoli() {
+  ['ga','na'].forEach(id => {
+    const vis = document.getElementById('alv-vis-'+id);
+    if (!vis || vis.querySelector('canvas')) return;
+    const c = document.createElement('canvas');
+    c.width = vis.clientWidth||200; c.height = 105;
+    vis.appendChild(c);
+    const ctx = c.getContext('2d');
+    if (id==='ga') {
+      for (let i=0;i<20;i++) {
+        const x=14+(i%5)*36, y=16+Math.floor(i/5)*28;
+        ctx.beginPath(); ctx.arc(x,y,11,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,183,197,0.55)'; ctx.fill();
+        ctx.strokeStyle='#FFB7C5'; ctx.lineWidth=1.5; ctx.stroke();
+      }
+    } else {
+      [[55,46,33],[148,42,27],[100,86,25]].forEach(([x,y,r])=>{
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle='rgba(201,177,255,0.45)'; ctx.fill();
+        ctx.strokeStyle='#C9B1FF'; ctx.lineWidth=1.5; ctx.stroke();
+      });
+    }
+  });
+}
+
+function clickSmoke(id) {
+  document.getElementById('sd-'+id).classList.toggle('show');
+}
+
+/* ════════════════════════════════
+   빈칸 채우기
+════════════════════════════════ */
+function checkBlanks() {
+  const map = {b1:'공기주머니', b2:'모세혈관', b3:'기체교환', b4:'표면적'};
+  let allOk = true;
+  Object.entries(map).forEach(([id,ans])=>{
+    const el = document.getElementById(id);
+    const v  = el.value.trim().replace(/\s/g,'');
+    const ok = (v===ans);
+    el.className = 'blank-inp '+(ok?'ok':'ng');
+    if (!ok) allOk = false;
+  });
+  const fb = document.getElementById('blank-fb');
+  fb.style.display = 'block';
+  if (allOk) {
+    fb.style.cssText='display:block;color:#27ae60;background:#E8F8F0;padding:9px 13px;border-radius:9px;margin-top:9px;';
+    fb.textContent = '✅ 모두 정답이에요! 잘 했어요 🌸';
+    if (!S[2].blank) { S[2].blank=true; markTask('t2-blank'); checkSec(2); }
+  } else {
+    fb.style.cssText='display:block;color:#e74c3c;background:#FFF0EE;padding:9px 13px;border-radius:9px;margin-top:9px;';
+    fb.textContent = '❌ 틀린 답이 있어요. 다시 확인해보세요!';
+  }
+}
+
+/* ════════════════════════════════
+   기체교환 애니메이션
+════════════════════════════════ */
+let gasRafId=null, gasTime=0, gasMode='';
+const gasClicked = new Set();
+
+function gasAnim(mode) {
+  gasMode = mode;
+  if (!gasClicked.has(mode)) {
+    gasClicked.add(mode);
+    S[3].anim = gasClicked.size;
+    document.getElementById('gasCnt').textContent = S[3].anim;
+    if (S[3].anim>=3) markTask('t3-anim');
+    checkSec(3);
+  }
+  if (gasRafId) cancelAnimationFrame(gasRafId);
+  gasTime = 0;
+  const desc = {
+    lung:   '🫁 <strong>폐에서의 기체 교환</strong><br>O₂: 허파꽈리(↑) → 모세혈관 &nbsp;|&nbsp; CO₂: 모세혈관(↑) → 허파꽈리',
+    tissue: '🔬 <strong>조직세포에서의 기체 교환</strong><br>O₂: 모세혈관(↑) → 조직세포 &nbsp;|&nbsp; CO₂: 조직세포(↑) → 모세혈관',
+    all:    '🔄 <strong>전체 순환</strong><br>심장→폐순환→심장→온몸순환 — O₂·CO₂가 끊임없이 교환돼요!'
+  };
+  document.getElementById('gasDesc').innerHTML = desc[mode]||'';
+  runGas();
+}
+
+function runGas() {
+  const canvas = document.getElementById('gasCanvas');
+  if (!canvas) return;
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = 260;
+  const ctx = canvas.getContext('2d');
+  gasTime++;
+  ctx.clearRect(0,0,W,H);
+
+  function node(cx,cy,rx,ry,bg,bc,lbl,sub) {
+    ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+    ctx.fillStyle=bg; ctx.fill();
+    ctx.strokeStyle=bc; ctx.lineWidth=2; ctx.stroke();
+    ctx.font='13px Jua,sans-serif'; ctx.fillStyle=bc; ctx.textAlign='center';
+    ctx.fillText(lbl,cx,cy-3);
+    if(sub){ctx.font='10px Jua,sans-serif';ctx.fillStyle='#999';ctx.fillText(sub,cx,cy+12);}
+  }
+  function particle(x,y,lbl,col) {
+    ctx.beginPath(); ctx.arc(x,y,11,0,Math.PI*2);
+    ctx.fillStyle=col; ctx.fill();
+    ctx.font='10px Jua,sans-serif'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+    ctx.fillText(lbl,x,y+4);
+  }
+
+  const mid=W/2;
+  if (gasMode==='lung'||gasMode==='all') {
+    const lx=mid*0.35, rx=mid*1.25, y=H*(gasMode==='all'?0.27:0.45);
+    node(lx,y,62,46,'rgba(255,228,236,.9)','#FFB7C5','🍇 허파꽈리','O₂↑ CO₂↓');
+    node(rx,y,62,46,'rgba(235,245,251,.9)','#AED6F1','🩸 모세혈관','O₂↓ CO₂↑');
+    const t1=(gasTime%70)/70, t2=((gasTime+35)%70)/70;
+    particle(lx+(rx-lx)*t1, y+Math.sin(t1*Math.PI)*-20, 'O₂','#3498db');
+    particle(rx-(rx-lx)*t2, y+Math.sin(t2*Math.PI)*20,  'CO₂','#e74c3c');
+  }
+  if (gasMode==='tissue'||gasMode==='all') {
+    const lx=mid*0.35, rx=mid*1.25, y=H*(gasMode==='all'?0.76:0.45);
+    node(lx,y,62,46,'rgba(235,245,251,.9)','#AED6F1','🩸 모세혈관','O₂↑ CO₂↓');
+    node(rx,y,62,46,'rgba(255,245,228,.9)','#F0C040','🔬 조직세포','O₂↓ CO₂↑');
+    const t3=(gasTime%70)/70, t4=((gasTime+35)%70)/70;
+    particle(lx+(rx-lx)*t3, y+Math.sin(t3*Math.PI)*-18, 'O₂','#3498db');
+    particle(rx-(rx-lx)*t4, y+Math.sin(t4*Math.PI)*18,  'CO₂','#e74c3c');
+  }
+  gasRafId = requestAnimationFrame(runGas);
+}
+
+/* ════════════════════════════════
+   호흡운동 애니메이션
+════════════════════════════════ */
+let breathRaf=null, breathPhase=0, breathDir=1, breathAuto=false;
+const breathClicked = new Set();
+
+function doBreath(mode) {
+  if (!breathClicked.has(mode)) {
+    breathClicked.add(mode);
+    S[4].anim = breathClicked.size;
+    document.getElementById('breathCnt').textContent = S[4].anim;
+    if (S[4].anim>=3) markTask('t4-anim');
+    checkSec(4);
+  }
+  breathAuto=false;
+  if (breathRaf) cancelAnimationFrame(breathRaf);
+  drawBreath(mode==='inhale'?1:0);
+  updateBreathInfo(mode);
+}
+
+function toggleBreathAuto() {
+  if (!breathClicked.has('auto')) {
+    breathClicked.add('auto');
+    S[4].anim = breathClicked.size;
+    document.getElementById('breathCnt').textContent = S[4].anim;
+    if (S[4].anim>=3) markTask('t4-anim');
+    checkSec(4);
+  }
+  breathAuto = !breathAuto;
+  if (breathAuto) runBreathAuto();
+  else if (breathRaf) cancelAnimationFrame(breathRaf);
+}
+
+function runBreathAuto() {
+  if (!breathAuto) return;
+  breathPhase += breathDir*0.013;
+  if (breathPhase>=1){breathPhase=1;breathDir=-1;}
+  if (breathPhase<=0){breathPhase=0;breathDir=1;}
+  drawBreath(breathPhase);
+  updateBreathInfo(breathPhase>0.5?'inhale':'exhale');
+  breathRaf = requestAnimationFrame(runBreathAuto);
+}
+
+function drawBreath(ph) {
+  const c=document.getElementById('breathCanvas');
+  if(!c) return;
+  const ctx=c.getContext('2d'), W=200, H=210;
+  ctx.clearRect(0,0,W,H);
+  const sc=0.63+ph*0.32, dY=147+ph*16, rY0=54-ph*11;
+  ctx.beginPath(); ctx.ellipse(100,104,67+ph*11,77,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(237,232,255,.35)'; ctx.fill();
+  ctx.strokeStyle='#FFEAA7'; ctx.lineWidth=5.5;
+  [rY0,rY0+22,rY0+44,rY0+66].forEach(y=>{
+    ctx.beginPath(); ctx.ellipse(100,y,61+ph*8,8.5,0,0,Math.PI*2); ctx.stroke();
+  });
+  [[75,102,-0.17],[125,102,0.17]].forEach(([tx,ty,a])=>{
+    ctx.save(); ctx.translate(tx,ty); ctx.scale(sc,sc);
+    ctx.beginPath(); ctx.ellipse(0,0,29,49,a,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,183,197,.82)'; ctx.fill();
+    ctx.strokeStyle='#FFB7C5'; ctx.lineWidth=2; ctx.stroke();
+    ctx.restore();
+  });
+  ctx.beginPath(); ctx.moveTo(33,dY);
+  ctx.quadraticCurveTo(100,dY+(ph>0.5?15:-7),167,dY);
+  ctx.strokeStyle='#C9B1FF'; ctx.lineWidth=5; ctx.stroke();
+  ctx.font='13px Jua,sans-serif'; ctx.fillStyle='#9B59B6'; ctx.textAlign='center';
+  ctx.fillText(ph>0.5?'💨 들숨':'💨 날숨',100,200);
+}
+
+function updateBreathInfo(mode) {
+  const isIn=mode==='inhale';
+  document.getElementById('bi-g').textContent = isIn?'⬇️ 내려감':'⬆️ 올라감';
+  document.getElementById('bi-b').textContent = isIn?'⬆️ 올라감':'⬇️ 내려감';
+  document.getElementById('bi-v').textContent = isIn?'🔼 증가':'🔽 감소';
+  document.getElementById('bi-p').textContent = isIn?'대기압보다 낮음 ↓':'대기압보다 높음 ↑';
+  document.getElementById('bi-a').textContent = isIn?'밖 → 허파 (들어옴)':'허파 → 밖 (나감)';
+}
+
+/* ════════════════════════════════
+   플래시카드
+════════════════════════════════ */
+const FLASH=[
+  {f:'호흡',              b:'숨을 쉬어 O₂를 받아들이고 CO₂를 내보내는 과정'},
+  {f:'세포호흡',          b:'세포 안에서 O₂로 에너지를 얻는 과정\n(CO₂ + H₂O 발생)'},
+  {f:'숨관 (기관)',       b:'공기가 드나드는 통로\n섬모로 먼지·세균 걸러냄'},
+  {f:'숨관가지 (기관지)', b:'숨관에서 갈라져 좌우 폐로 들어가는 관'},
+  {f:'허파 (폐)',         b:'가슴 좌우 1쌍\n수많은 허파꽈리로 구성'},
+  {f:'허파꽈리 (폐포)',   b:'포도알 모양 작은 공기주머니\n모세혈관과 기체 교환!'},
+  {f:'가로막',            b:'근육으로 된 막\n위아래 움직임으로 흉강 압력 조절'},
+  {f:'흉강',             b:'갈비뼈+가로막으로 둘러싸인 공간\n허파가 존재하는 곳'},
+  {f:'보일 법칙',         b:'부피↑→압력↓ (반비례)\n기체는 압력 높은 곳→낮은 곳'},
+  {f:'들숨',             b:'가로막↓ 갈비뼈↑\n흉강 부피↑→압력↓→공기 유입'},
+  {f:'날숨',             b:'가로막↑ 갈비뼈↓\n흉강 부피↓→압력↑→공기 배출'},
+  {f:'기체 교환',         b:'농도 높음→낮음\n폐: 허파꽈리↔모세혈관\n온몸: 조직세포↔모세혈관'},
+];
+const flashFlipped = new Set();
+
+function renderFlash() {
+  const grid=document.getElementById('flashGrid');
+  if (!grid) return;
+  grid.innerHTML='';
+  FLASH.forEach((d,i)=>{
+    const div=document.createElement('div');
+    div.className='fc'+(flashFlipped.has(i)?' flipped':'');
+    div.innerHTML=`<div class="fc-inner">
+      <div class="fc-front">${d.f}</div>
+      <div class="fc-back">${d.b.replace(/\n/g,'<br>')}</div>
+    </div>`;
+    div.onclick=()=>{ flashFlipped.has(i)?flashFlipped.delete(i):flashFlipped.add(i); renderFlash(); updateFlashProg(); };
+    grid.appendChild(div);
+  });
+}
+
+function resetFlash(){ flashFlipped.clear(); renderFlash(); updateFlashProg(); }
+
+function updateFlashProg(){
+  const n=flashFlipped.size;
+  document.getElementById('flashProg').textContent=n+' / 12 완료';
+  if(n>=12){
+    document.getElementById('next-5').classList.add('on');
+    document.getElementById('lock-5').style.display='none';
+  }
+}
+
+/* ════════════════════════════════
+   퀴즈
+════════════════════════════════ */
+const QUIZ=[
+  {q:'1. 들숨 시 공기의 이동 경로로 옳은 것은?',
+   opts:['몸 밖→코→숨관→숨관가지→폐','몸 밖→코→숨관가지→숨관→폐','폐→숨관가지→숨관→코→밖','코→숨관가지→숨관→폐→밖','몸 밖→숨관→코→숨관가지→폐'],
+   ans:0, exp:'공기는 코→숨관(기관)→숨관가지(기관지)→폐 순서로 이동해요!'},
+  {q:'2. 허파꽈리로 이루어져 있어 유리한 점은?',
+   opts:['허파를 단단하게 해 준다','허파 무게를 무겁게 해 준다','외부 충격에서 허파를 보호한다','혈액을 빠르게 흐르게 한다','기체를 효율적으로 교환하게 해 준다'],
+   ans:4, exp:'허파꽈리가 많을수록 표면적이 넓어져 기체 교환이 효율적으로 일어나요!'},
+  {q:'3. 들숨이 일어날 때의 변화로 옳은 것은?',
+   opts:['가로막이 올라간다','갈비뼈가 내려간다','흉강의 부피가 감소한다','흉강 압력이 대기압보다 낮아진다','공기가 허파에서 밖으로 나간다'],
+   ans:3, exp:'들숨: 가로막↓ 갈비뼈↑ → 흉강 부피↑ → 압력이 대기압보다 낮아짐 → 공기 유입!'},
+  {q:'4. 허파꽈리에서 모세혈관으로 이동하는 기체는?',
+   opts:['이산화탄소','산소','질소','수증기','일산화탄소'],
+   ans:1, exp:'허파꽈리는 O₂ 농도가 높고, 모세혈관은 낮으므로 O₂가 허파꽈리→모세혈관으로 이동해요!'},
+  {q:'5. 호흡운동 모형에서 고무막을 아래로 당겼을 때는?',
+   opts:['고무풍선이 커진다 (들숨)','고무풍선이 작아진다 (날숨)','변화 없다','고무풍선이 터진다','색이 변한다'],
+   ans:0, exp:'고무막↓ = 가로막↓ → 흉강 부피↑ → 압력↓ → 풍선(허파) 커짐 = 들숨!'},
+  {q:'6. 오랫동안 흡연한 사람의 폐에서 나타나지 않는 변화는?',
+   opts:['허파꽈리 벽이 손상된다','허파꽈리 표면적이 증가한다','기체 교환 효율이 떨어진다','만성 폐쇄성 폐질환 위험이 높아진다','여러 허파꽈리가 합쳐져 큰 공간이 된다'],
+   ans:1, exp:'흡연으로 허파꽈리가 파괴·합쳐지면 표면적은 오히려 감소해요!'},
+];
+
+function renderQuiz(){
+  const area=document.getElementById('quizArea');
+  if(!area) return;
+  area.innerHTML='';
+  QUIZ.forEach((q,qi)=>{
+    const div=document.createElement('div');
+    div.className='quiz-card';
+    div.innerHTML=`<div class="quiz-q">${q.q}</div>
+      <ul class="quiz-opts" id="qo-${qi}">
+        ${q.opts.map((o,oi)=>`<li onclick="answerQ(${qi},${oi})">${o}</li>`).join('')}
+      </ul>
+      <div class="quiz-fb" id="qf-${qi}"></div>`;
+    area.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi){
+  if(quizDone.has(qi)) return;
+  quizDone.add(qi);
+  const q=QUIZ[qi];
+  document.querySelectorAll('#qo-'+qi+' li').forEach((li,i)=>{
+    li.classList.add('answered');
+    if(i===q.ans) li.classList.add('correct');
+    else if(i===oi) li.classList.add('wrong');
+  });
+  const fb=document.getElementById('qf-'+qi);
+  if(oi===q.ans){ fb.className='quiz-fb ok'; fb.textContent='✅ 정답! '+q.exp; quizScore++; }
+  else          { fb.className='quiz-fb ng'; fb.textContent='❌ 오답! '+q.exp; }
+
+  if(quizDone.size===QUIZ.length){
+    const pct=Math.round(quizScore/QUIZ.length*100);
+    const box=document.getElementById('quizScoreBox');
+    box.style.display='block';
+    box.innerHTML=`🌟 ${quizScore} / ${QUIZ.length} 정답! (${pct}%)<br>
+      ${pct>=80?'훌륭해요! 🎉':pct>=60?'잘 했어요! 🌸':'다시 한 번 복습해봐요 💪'}`;
+    document.getElementById('next-6').classList.add('on');
+    document.getElementById('lock-6').style.display='none';
+  }
+}
+
+/* ════════════════════════════════
+   마무리 : 결과 빌드
+════════════════════════════════ */
+function calcTime() {
+  if (!startTime) return '-';
+  const diff = Math.floor((new Date() - startTime) / 1000);
+  const m = Math.floor(diff/60), s = diff%60;
+  return m+'분 '+s+'초';
+}
+
+function buildResult() {
+  /* 기본 정보 */
+  document.getElementById('res-name').textContent  = student.name;
+  document.getElementById('res-class').textContent = student.cls+'반 '+student.num+'번';
+  const pct = Math.round(quizScore/QUIZ.length*100);
+  document.getElementById('res-score').textContent = quizScore+' / '+QUIZ.length+' ('+pct+'%)';
+  document.getElementById('res-time').textContent  = calcTime();
+  document.getElementById('res-pct').textContent   = pct+'%';
+  setTimeout(()=>{ document.getElementById('res-bar').style.width = pct+'%'; }, 300);
+
+  /* 챕터 현황 */
+  const chDiv = document.getElementById('chapterStatus');
+  chDiv.innerHTML = '';
+  const chDone = [
+    S[0].hint,
+    S[1].taba&&S[1].tabb&&S[1].organs>=6&&S[1].tabc,
+    S[2].taba&&S[2].tabb&&S[2].alv>=2&&S[2].tabc&&S[2].blank,
+    S[3].taba&&S[3].tabb&&S[3].tabc&&S[3].anim>=3,
+    S[4].taba&&S[4].tabb&&S[4].tabc&&S[4].tabd&&S[4].anim>=3,
+    flashFlipped.size>=12,
+    quizDone.size>=6,
+    true
+  ];
+  chDone.forEach((done,i)=>{
+    const sp=document.createElement('span');
+    sp.style.cssText=`display:inline-block;padding:5px 12px;border-radius:12px;font-size:.82rem;
+      background:${done?'#E8F8F2':'#FFF0EE'};
+      color:${done?'#3a8a6a':'#e74c3c'};
+      border:1.5px solid ${done?'#B5EAD7':'#FAD7D7'};`;
+    sp.textContent=(done?'✅ ':'❌ ')+CHAPTER_NAMES[i];
+    chDiv.appendChild(sp);
+  });
+
+  /* 제출 미리보기 */
+  const quizDetail = QUIZ.map((q,i)=>{
+    const answered = quizDone.has(i);
+    return `Q${i+1}: ${answered ? (/* 맞은지 확인 */
+      (() => {
+        // 정답 여부는 quizScore 로 직접 확인 불가하므로 DOM에서 읽음
+        const correctLi = document.querySelector(`#qo-${i} li.correct`);
+        const wrongLi   = document.querySelector(`#qo-${i} li.wrong`);
+        return correctLi && !wrongLi ? '⭕' : '❌';
+      })()
+    ) : '미응답'}`;
+  }).join(' | ');
+
+  document.getElementById('submitPreview').innerHTML =
+    `<strong>이름:</strong> ${student.name}<br>
+     <strong>반/번호:</strong> ${student.cls}반 ${student.num}번<br>
+     <strong>퀴즈:</strong> ${quizScore}/${QUIZ.length}점 (${pct}%)<br>
+     <strong>학습시간:</strong> ${calcTime()}<br>
+     <strong>문항별:</strong> ${quizDetail}<br>
+     <strong>완료챕터:</strong> ${chDone.filter(Boolean).length}/${chDone.length}`;
+}
+
+/* ════════════════════════════════
+   결과 제출 (Google Forms)
+════════════════════════════════ */
+function submitResult() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 제출 중...';
+
+  /* ──────────────────────────────────────────────────────────────
+     ★ 선생님께: 아래 FORM_URL과 entry ID를 Google Forms에서
+        발급받은 값으로 교체해주세요!
+
+     [Google Forms 연동 방법]
+     1. Google Forms에서 새 양식 만들기
+     2. 질문 추가: 반, 번호, 이름, 퀴즈점수, 학습시간, 상세결과
+     3. 양식 미리보기 → 개발자도구(F12) → Network 탭에서
+        제출 시 발생하는 POST 요청의 URL과 entry.XXXXXXXX 확인
+     4. 아래 FORM_URL, ENTRIES 값을 교체
+
+     [임시 동작 방식]
+     현재는 Google Forms URL이 없으므로 로컬에서 완료 표시만 합니다.
+     URL 교체 후 실제 제출이 가능해요!
+  ────────────────────────────────────────────────────────────── */
+
+  const FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfZnTA4DppwiDKbID9rsPVgahpqeN2NK7yOQA_svf952AA-kw/formResponse';
+  const ENTRIES  = {
+    class:  'entry.622922748',  // 반
+    num:    'entry.1173603271',  // 번호
+    name:   'entry.367250511',  // 이름
+    score:  'entry.265288906',  // 퀴즈점수
+    time:   'entry.523255550',  // 학습시간
+    detail: 'entry.459300023',  // 상세결과
+  };
+
+  const pct = Math.round(quizScore/QUIZ.length*100);
+  const detail = QUIZ.map((_,i)=>{
+    const c = document.querySelector(`#qo-${i} li.correct`);
+    const w = document.querySelector(`#qo-${i} li.wrong`);
+    return `Q${i+1}:${(c&&!w)?'O':'X'}`;
+  }).join(',');
+
+  const params = new URLSearchParams({
+    [ENTRIES.class]:  student.cls,
+    [ENTRIES.num]:    student.num,
+    [ENTRIES.name]:   student.name,
+    [ENTRIES.score]:  `${quizScore}/${QUIZ.length}(${pct}%)`,
+    [ENTRIES.time]:   calcTime(),
+    [ENTRIES.detail]: detail,
+  });
+
+  /* CORS 우회를 위한 no-cors fetch */
+  fetch(FORM_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body:    params.toString(),
+  })
+  .then(()  => showSubmitDone())
+  .catch(()  => showSubmitDone()); // no-cors는 항상 opaque → catch 불필요하지만 안전망
+
+  /* FORM_URL 미설정 시 즉시 완료 표시 (데모용) */
+  if (FORM_URL.includes('[여기에')) {
+    setTimeout(showSubmitDone, 1200);
+    return;
+  }
+}
+
+function showSubmitDone() {
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('submitDone').classList.add('show');
+}
+
+/* ════════════════════════════════
+   최종 체크
+════════════════════════════════ */
+function finalCheck(li){
+  li.classList.toggle('checked');
+  li.querySelector('.ck').textContent = li.classList.contains('checked')?'✅':'';
+}
+</script>
+</body>
+</html>
+
+
+
+							<script>
+                            	const FORM_URL = 'https://docs.google.com/forms/d/e/[실제ID]/formResponse';
+const ENTRIES = {
+  class:  'entry.실제번호',
+  num:    'entry.실제번호',
+  // ...
+};
+
+
+/* ════════════════════════════════
+   학생 정보
+════════════════════════════════ */
+let student = { cls:'', num:'', name:'' };
+let startTime = null;
+let quizScore = 0;
+let quizDone  = new Set();
+
+function doLogin() {
+  const cls  = document.getElementById('inp-class').value.trim();
+  const num  = document.getElementById('inp-num').value.trim();
+  const name = document.getElementById('inp-name').value.trim();
+  const err  = document.getElementById('loginErr');
+
+  [document.getElementById('inp-class'),
+   document.getElementById('inp-num'),
+   document.getElementById('inp-name')].forEach(el => el.classList.remove('err'));
+
+  if (!cls || !num || !name) {
+    err.style.display = 'block';
+    if (!cls) document.getElementById('inp-class').classList.add('err');
+    if (!num) document.getElementById('inp-num').classList.add('err');
+    if (!name) document.getElementById('inp-name').classList.add('err');
+    return;
+  }
+  err.style.display = 'none';
+  student = { cls, num, name };
+  startTime = new Date();
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('studentBadge').textContent =
+    `👤 ${cls}반 ${num}번 ${name}`;
+
+  renderFlash();
+  renderQuiz();
+  drawBreath(0);
+  setTimeout(drawAlveoli, 400);
+}
+
+/* ════════════════════════════════
+   전역 상태
+════════════════════════════════ */
+let unlocked = 0;
+const S = {
+  0:{ hint:false },
+  1:{ taba:false, tabb:false, organs:0, tabc:false },
+  2:{ taba:false, tabb:false, alv:0, tabc:false, blank:false },
+  3:{ taba:false, tabb:false, tabc:false, anim:0 },
+  4:{ taba:false, tabb:false, tabc:false, tabd:false, anim:0 },
+};
+const CHAPTER_NAMES = ['학습목표','호흡계란?','허파꽈리','기체교환','호흡운동','플래시카드','퀴즈','마무리'];
+
+/* ════════════════════════════════
+   섹션 이동
+════════════════════════════════ */
+function goSec(n) {
+  if (n > unlocked) return;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + n).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function doNext(cur, nxt) {
+  if (!document.getElementById('next-' + cur).classList.contains('on')) return;
+  if (nxt > unlocked) {
+    unlocked = nxt;
+    const nb = document.querySelectorAll('.nav-btn')[nxt];
+    nb.classList.remove('locked');
+  }
+  updateProgress();
+  goSec(nxt);
+  if (nxt === 7) buildResult();
+}
+
+function updateProgress() {
+  const pct = Math.round(unlocked / 7 * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent  = pct + '%';
+  document.querySelectorAll('.nav-btn').forEach((b,i) => {
+    if (i < unlocked) b.classList.add('done');
+    if (i <= unlocked) b.classList.remove('locked');
+  });
+}
+
+/* ════════════════════════════════
+   잠금 해제 검사
+════════════════════════════════ */
+function checkSec(n) {
+  let ok = false;
+  switch(n) {
+    case 0: ok = S[0].hint; break;
+    case 1: ok = S[1].taba && S[1].tabb && S[1].organs>=6 && S[1].tabc; break;
+    case 2: ok = S[2].taba && S[2].tabb && S[2].alv>=2 && S[2].tabc && S[2].blank; break;
+    case 3: ok = S[3].taba && S[3].tabb && S[3].tabc && S[3].anim>=3; break;
+    case 4: ok = S[4].taba && S[4].tabb && S[4].tabc && S[4].tabd && S[4].anim>=3; break;
+  }
+  const btn = document.getElementById('next-' + n);
+  const lk  = document.getElementById('lock-' + n);
+  if (btn) {
+    btn.classList.toggle('on', ok);
+    if (lk) lk.style.display = ok ? 'none' : 'block';
+  }
+}
+
+function markTask(id) {
+  const li = document.getElementById(id);
+  if (!li || li.classList.contains('done-item')) return;
+  li.classList.add('done-item');
+  li.querySelector('.tk-check').textContent = '✅';
+}
+
+/* ════════════════════════════════
+   섹션 0 힌트
+════════════════════════════════ */
+function openHint0() {
+  document.getElementById('hint0').classList.add('show');
+  if (!S[0].hint) {
+    S[0].hint = true;
+    markTask('t0-hint');
+    checkSec(0);
+  }
+}
+
+/* ════════════════════════════════
+   탭
+════════════════════════════════ */
+const tabMap = {
+  '1a':['t1-taba','cl1'], '1b':['t1-tabb','cl1'], '1c':['t1-tabc','cl1'],
+  '2a':['t2-taba','cl2'], '2b':['t2-tabb','cl2'], '2c':['t2-tabc','cl2'],
+  '3a':['t3-taba','cl3'], '3b':['t3-tabb','cl3'], '3c':['t3-tabc','cl3'],
+  '4a':['t4-taba','cl4'], '4b':['t4-tabb','cl4'], '4c':['t4-tabc','cl4'], '4d':['t4-tabd','cl4'],
+};
+const sMap = {
+  't1-taba':()=>{S[1].taba=true;},  't1-tabb':()=>{S[1].tabb=true;},  't1-tabc':()=>{S[1].tabc=true;},
+  't2-taba':()=>{S[2].taba=true;},  't2-tabb':()=>{S[2].tabb=true;},  't2-tabc':()=>{S[2].tabc=true;},
+  't3-taba':()=>{S[3].taba=true;},  't3-tabb':()=>{S[3].tabb=true;},  't3-tabc':()=>{S[3].tabc=true;},
+  't4-taba':()=>{S[4].taba=true;},  't4-tabb':()=>{S[4].tabb=true;},  't4-tabc':()=>{S[4].tabc=true;}, 't4-tabd':()=>{S[4].tabd=true;},
+};
+
+function openTab(sec, key) {
+  document.querySelectorAll('[id^="tc'+sec+'-"]').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tc'+sec+'-'+key).classList.add('active');
+  document.querySelectorAll('[id^="tb'+sec+'-"]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tb'+sec+'-'+key).classList.add('active');
+
+  const tk = sec+''+key;
+  const info = tabMap[tk];
+  if (info) {
+    const tid = info[0];
+    if (sMap[tid]) sMap[tid]();
+    markTask(tid);
+    checkSec(sec);
+  }
+  if (sec===3 && key==='c') setTimeout(()=>{ const c=document.getElementById('gasCanvas'); if(c) c.width=c.offsetWidth; },100);
+}
+
+/* ════════════════════════════════
+   호흡기관
+════════════════════════════════ */
+const organVisited = new Set();
+function openOrgan(name, icon, desc, key) {
+  document.getElementById('organDetailInner').innerHTML =
+    '<strong>'+icon+' '+name+'</strong><br><br>'+desc;
+  document.getElementById('organDetail').classList.add('show');
+  if (!organVisited.has(key)) {
+    organVisited.add(key);
+    const card = document.getElementById('oc-'+key);
+    if (card) card.classList.add('visited');
+    S[1].organs = organVisited.size;
+    document.getElementById('organCnt').textContent = S[1].organs;
+    if (S[1].organs >= 6) markTask('t1-organs');
+    checkSec(1);
+  }
+}
+
+/* ════════════════════════════════
+   허파꽈리
+════════════════════════════════ */
+const alvClicked = new Set();
+function clickAlv(id) {
+  document.getElementById('alv-info-'+id).classList.toggle('show');
+  if (!alvClicked.has(id)) {
+    alvClicked.add(id);
+    S[2].alv = alvClicked.size;
+    document.getElementById('alvCnt').textContent = S[2].alv;
+    if (S[2].alv >= 2) markTask('t2-alv');
+    checkSec(2);
+  }
+}
+
+function drawAlveoli() {
+  ['ga','na'].forEach(id => {
+    const vis = document.getElementById('alv-vis-'+id);
+    if (!vis || vis.querySelector('canvas')) return;
+    const c = document.createElement('canvas');
+    c.width = vis.clientWidth||200; c.height = 105;
+    vis.appendChild(c);
+    const ctx = c.getContext('2d');
+    if (id==='ga') {
+      for (let i=0;i<20;i++) {
+        const x=14+(i%5)*36, y=16+Math.floor(i/5)*28;
+        ctx.beginPath(); ctx.arc(x,y,11,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,183,197,0.55)'; ctx.fill();
+        ctx.strokeStyle='#FFB7C5'; ctx.lineWidth=1.5; ctx.stroke();
+      }
+    } else {
+      [[55,46,33],[148,42,27],[100,86,25]].forEach(([x,y,r])=>{
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle='rgba(201,177,255,0.45)'; ctx.fill();
+        ctx.strokeStyle='#C9B1FF'; ctx.lineWidth=1.5; ctx.stroke();
+      });
+    }
+  });
+}
+
+function clickSmoke(id) {
+  document.getElementById('sd-'+id).classList.toggle('show');
+}
+
+/* ════════════════════════════════
+   빈칸 채우기
+════════════════════════════════ */
+function checkBlanks() {
+  const map = {b1:'공기주머니', b2:'모세혈관', b3:'기체교환', b4:'표면적'};
+  let allOk = true;
+  Object.entries(map).forEach(([id,ans])=>{
+    const el = document.getElementById(id);
+    const v  = el.value.trim().replace(/\s/g,'');
+    const ok = (v===ans);
+    el.className = 'blank-inp '+(ok?'ok':'ng');
+    if (!ok) allOk = false;
+  });
+  const fb = document.getElementById('blank-fb');
+  fb.style.display = 'block';
+  if (allOk) {
+    fb.style.cssText='display:block;color:#27ae60;background:#E8F8F0;padding:9px 13px;border-radius:9px;margin-top:9px;';
+    fb.textContent = '✅ 모두 정답이에요! 잘 했어요 🌸';
+    if (!S[2].blank) { S[2].blank=true; markTask('t2-blank'); checkSec(2); }
+  } else {
+    fb.style.cssText='display:block;color:#e74c3c;background:#FFF0EE;padding:9px 13px;border-radius:9px;margin-top:9px;';
+    fb.textContent = '❌ 틀린 답이 있어요. 다시 확인해보세요!';
+  }
+}
+
+/* ════════════════════════════════
+   기체교환 애니메이션
+════════════════════════════════ */
+let gasRafId=null, gasTime=0, gasMode='';
+const gasClicked = new Set();
+
+function gasAnim(mode) {
+  gasMode = mode;
+  if (!gasClicked.has(mode)) {
+    gasClicked.add(mode);
+    S[3].anim = gasClicked.size;
+    document.getElementById('gasCnt').textContent = S[3].anim;
+    if (S[3].anim>=3) markTask('t3-anim');
+    checkSec(3);
+  }
+  if (gasRafId) cancelAnimationFrame(gasRafId);
+  gasTime = 0;
+  const desc = {
+    lung:   '🫁 <strong>폐에서의 기체 교환</strong><br>O₂: 허파꽈리(↑) → 모세혈관 &nbsp;|&nbsp; CO₂: 모세혈관(↑) → 허파꽈리',
+    tissue: '🔬 <strong>조직세포에서의 기체 교환</strong><br>O₂: 모세혈관(↑) → 조직세포 &nbsp;|&nbsp; CO₂: 조직세포(↑) → 모세혈관',
+    all:    '🔄 <strong>전체 순환</strong><br>심장→폐순환→심장→온몸순환 — O₂·CO₂가 끊임없이 교환돼요!'
+  };
+  document.getElementById('gasDesc').innerHTML = desc[mode]||'';
+  runGas();
+}
+
+function runGas() {
+  const canvas = document.getElementById('gasCanvas');
+  if (!canvas) return;
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = 260;
+  const ctx = canvas.getContext('2d');
+  gasTime++;
+  ctx.clearRect(0,0,W,H);
+
+  function node(cx,cy,rx,ry,bg,bc,lbl,sub) {
+    ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+    ctx.fillStyle=bg; ctx.fill();
+    ctx.strokeStyle=bc; ctx.lineWidth=2; ctx.stroke();
+    ctx.font='13px Jua,sans-serif'; ctx.fillStyle=bc; ctx.textAlign='center';
+    ctx.fillText(lbl,cx,cy-3);
+    if(sub){ctx.font='10px Jua,sans-serif';ctx.fillStyle='#999';ctx.fillText(sub,cx,cy+12);}
+  }
+  function particle(x,y,lbl,col) {
+    ctx.beginPath(); ctx.arc(x,y,11,0,Math.PI*2);
+    ctx.fillStyle=col; ctx.fill();
+    ctx.font='10px Jua,sans-serif'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+    ctx.fillText(lbl,x,y+4);
+  }
+
+  const mid=W/2;
+  if (gasMode==='lung'||gasMode==='all') {
+    const lx=mid*0.35, rx=mid*1.25, y=H*(gasMode==='all'?0.27:0.45);
+    node(lx,y,62,46,'rgba(255,228,236,.9)','#FFB7C5','🍇 허파꽈리','O₂↑ CO₂↓');
+    node(rx,y,62,46,'rgba(235,245,251,.9)','#AED6F1','🩸 모세혈관','O₂↓ CO₂↑');
+    const t1=(gasTime%70)/70, t2=((gasTime+35)%70)/70;
+    particle(lx+(rx-lx)*t1, y+Math.sin(t1*Math.PI)*-20, 'O₂','#3498db');
+    particle(rx-(rx-lx)*t2, y+Math.sin(t2*Math.PI)*20,  'CO₂','#e74c3c');
+  }
+  if (gasMode==='tissue'||gasMode==='all') {
+    const lx=mid*0.35, rx=mid*1.25, y=H*(gasMode==='all'?0.76:0.45);
+    node(lx,y,62,46,'rgba(235,245,251,.9)','#AED6F1','🩸 모세혈관','O₂↑ CO₂↓');
+    node(rx,y,62,46,'rgba(255,245,228,.9)','#F0C040','🔬 조직세포','O₂↓ CO₂↑');
+    const t3=(gasTime%70)/70, t4=((gasTime+35)%70)/70;
+    particle(lx+(rx-lx)*t3, y+Math.sin(t3*Math.PI)*-18, 'O₂','#3498db');
+    particle(rx-(rx-lx)*t4, y+Math.sin(t4*Math.PI)*18,  'CO₂','#e74c3c');
+  }
+  gasRafId = requestAnimationFrame(runGas);
+}
+
+/* ════════════════════════════════
+   호흡운동 애니메이션
+════════════════════════════════ */
+let breathRaf=null, breathPhase=0, breathDir=1, breathAuto=false;
+const breathClicked = new Set();
+
+function doBreath(mode) {
+  if (!breathClicked.has(mode)) {
+    breathClicked.add(mode);
+    S[4].anim = breathClicked.size;
+    document.getElementById('breathCnt').textContent = S[4].anim;
+    if (S[4].anim>=3) markTask('t4-anim');
+    checkSec(4);
+  }
+  breathAuto=false;
+  if (breathRaf) cancelAnimationFrame(breathRaf);
+  drawBreath(mode==='inhale'?1:0);
+  updateBreathInfo(mode);
+}
+
+function toggleBreathAuto() {
+  if (!breathClicked.has('auto')) {
+    breathClicked.add('auto');
+    S[4].anim = breathClicked.size;
+    document.getElementById('breathCnt').textContent = S[4].anim;
+    if (S[4].anim>=3) markTask('t4-anim');
+    checkSec(4);
+  }
+  breathAuto = !breathAuto;
+  if (breathAuto) runBreathAuto();
+  else if (breathRaf) cancelAnimationFrame(breathRaf);
+}
+
+function runBreathAuto() {
+  if (!breathAuto) return;
+  breathPhase += breathDir*0.013;
+  if (breathPhase>=1){breathPhase=1;breathDir=-1;}
+  if (breathPhase<=0){breathPhase=0;breathDir=1;}
+  drawBreath(breathPhase);
+  updateBreathInfo(breathPhase>0.5?'inhale':'exhale');
+  breathRaf = requestAnimationFrame(runBreathAuto);
+}
+
+function drawBreath(ph) {
+  const c=document.getElementById('breathCanvas');
+  if(!c) return;
+  const ctx=c.getContext('2d'), W=200, H=210;
+  ctx.clearRect(0,0,W,H);
+  const sc=0.63+ph*0.32, dY=147+ph*16, rY0=54-ph*11;
+  ctx.beginPath(); ctx.ellipse(100,104,67+ph*11,77,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(237,232,255,.35)'; ctx.fill();
+  ctx.strokeStyle='#FFEAA7'; ctx.lineWidth=5.5;
+  [rY0,rY0+22,rY0+44,rY0+66].forEach(y=>{
+    ctx.beginPath(); ctx.ellipse(100,y,61+ph*8,8.5,0,0,Math.PI*2); ctx.stroke();
+  });
+  [[75,102,-0.17],[125,102,0.17]].forEach(([tx,ty,a])=>{
+    ctx.save(); ctx.translate(tx,ty); ctx.scale(sc,sc);
+    ctx.beginPath(); ctx.ellipse(0,0,29,49,a,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,183,197,.82)'; ctx.fill();
+    ctx.strokeStyle='#FFB7C5'; ctx.lineWidth=2; ctx.stroke();
+    ctx.restore();
+  });
+  ctx.beginPath(); ctx.moveTo(33,dY);
+  ctx.quadraticCurveTo(100,dY+(ph>0.5?15:-7),167,dY);
+  ctx.strokeStyle='#C9B1FF'; ctx.lineWidth=5; ctx.stroke();
+  ctx.font='13px Jua,sans-serif'; ctx.fillStyle='#9B59B6'; ctx.textAlign='center';
+  ctx.fillText(ph>0.5?'💨 들숨':'💨 날숨',100,200);
+}
+
+function updateBreathInfo(mode) {
+  const isIn=mode==='inhale';
+  document.getElementById('bi-g').textContent = isIn?'⬇️ 내려감':'⬆️ 올라감';
+  document.getElementById('bi-b').textContent = isIn?'⬆️ 올라감':'⬇️ 내려감';
+  document.getElementById('bi-v').textContent = isIn?'🔼 증가':'🔽 감소';
+  document.getElementById('bi-p').textContent = isIn?'대기압보다 낮음 ↓':'대기압보다 높음 ↑';
+  document.getElementById('bi-a').textContent = isIn?'밖 → 허파 (들어옴)':'허파 → 밖 (나감)';
+}
+
+/* ════════════════════════════════
+   플래시카드
+════════════════════════════════ */
+const FLASH=[
+  {f:'호흡',              b:'숨을 쉬어 O₂를 받아들이고 CO₂를 내보내는 과정'},
+  {f:'세포호흡',          b:'세포 안에서 O₂로 에너지를 얻는 과정\n(CO₂ + H₂O 발생)'},
+  {f:'숨관 (기관)',       b:'공기가 드나드는 통로\n섬모로 먼지·세균 걸러냄'},
+  {f:'숨관가지 (기관지)', b:'숨관에서 갈라져 좌우 폐로 들어가는 관'},
+  {f:'허파 (폐)',         b:'가슴 좌우 1쌍\n수많은 허파꽈리로 구성'},
+  {f:'허파꽈리 (폐포)',   b:'포도알 모양 작은 공기주머니\n모세혈관과 기체 교환!'},
+  {f:'가로막',            b:'근육으로 된 막\n위아래 움직임으로 흉강 압력 조절'},
+  {f:'흉강',             b:'갈비뼈+가로막으로 둘러싸인 공간\n허파가 존재하는 곳'},
+  {f:'보일 법칙',         b:'부피↑→압력↓ (반비례)\n기체는 압력 높은 곳→낮은 곳'},
+  {f:'들숨',             b:'가로막↓ 갈비뼈↑\n흉강 부피↑→압력↓→공기 유입'},
+  {f:'날숨',             b:'가로막↑ 갈비뼈↓\n흉강 부피↓→압력↑→공기 배출'},
+  {f:'기체 교환',         b:'농도 높음→낮음\n폐: 허파꽈리↔모세혈관\n온몸: 조직세포↔모세혈관'},
+];
+const flashFlipped = new Set();
+
+function renderFlash() {
+  const grid=document.getElementById('flashGrid');
+  if (!grid) return;
+  grid.innerHTML='';
+  FLASH.forEach((d,i)=>{
+    const div=document.createElement('div');
+    div.className='fc'+(flashFlipped.has(i)?' flipped':'');
+    div.innerHTML=`<div class="fc-inner">
+      <div class="fc-front">${d.f}</div>
+      <div class="fc-back">${d.b.replace(/\n/g,'<br>')}</div>
+    </div>`;
+    div.onclick=()=>{ flashFlipped.has(i)?flashFlipped.delete(i):flashFlipped.add(i); renderFlash(); updateFlashProg(); };
+    grid.appendChild(div);
+  });
+}
+
+function resetFlash(){ flashFlipped.clear(); renderFlash(); updateFlashProg(); }
+
+function updateFlashProg(){
+  const n=flashFlipped.size;
+  document.getElementById('flashProg').textContent=n+' / 12 완료';
+  if(n>=12){
+    document.getElementById('next-5').classList.add('on');
+    document.getElementById('lock-5').style.display='none';
+  }
+}
+
+/* ════════════════════════════════
+   퀴즈
+════════════════════════════════ */
+const QUIZ=[
+  {q:'1. 들숨 시 공기의 이동 경로로 옳은 것은?',
+   opts:['몸 밖→코→숨관→숨관가지→폐','몸 밖→코→숨관가지→숨관→폐','폐→숨관가지→숨관→코→밖','코→숨관가지→숨관→폐→밖','몸 밖→숨관→코→숨관가지→폐'],
+   ans:0, exp:'공기는 코→숨관(기관)→숨관가지(기관지)→폐 순서로 이동해요!'},
+  {q:'2. 허파꽈리로 이루어져 있어 유리한 점은?',
+   opts:['허파를 단단하게 해 준다','허파 무게를 무겁게 해 준다','외부 충격에서 허파를 보호한다','혈액을 빠르게 흐르게 한다','기체를 효율적으로 교환하게 해 준다'],
+   ans:4, exp:'허파꽈리가 많을수록 표면적이 넓어져 기체 교환이 효율적으로 일어나요!'},
+  {q:'3. 들숨이 일어날 때의 변화로 옳은 것은?',
+   opts:['가로막이 올라간다','갈비뼈가 내려간다','흉강의 부피가 감소한다','흉강 압력이 대기압보다 낮아진다','공기가 허파에서 밖으로 나간다'],
+   ans:3, exp:'들숨: 가로막↓ 갈비뼈↑ → 흉강 부피↑ → 압력이 대기압보다 낮아짐 → 공기 유입!'},
+  {q:'4. 허파꽈리에서 모세혈관으로 이동하는 기체는?',
+   opts:['이산화탄소','산소','질소','수증기','일산화탄소'],
+   ans:1, exp:'허파꽈리는 O₂ 농도가 높고, 모세혈관은 낮으므로 O₂가 허파꽈리→모세혈관으로 이동해요!'},
+  {q:'5. 호흡운동 모형에서 고무막을 아래로 당겼을 때는?',
+   opts:['고무풍선이 커진다 (들숨)','고무풍선이 작아진다 (날숨)','변화 없다','고무풍선이 터진다','색이 변한다'],
+   ans:0, exp:'고무막↓ = 가로막↓ → 흉강 부피↑ → 압력↓ → 풍선(허파) 커짐 = 들숨!'},
+  {q:'6. 오랫동안 흡연한 사람의 폐에서 나타나지 않는 변화는?',
+   opts:['허파꽈리 벽이 손상된다','허파꽈리 표면적이 증가한다','기체 교환 효율이 떨어진다','만성 폐쇄성 폐질환 위험이 높아진다','여러 허파꽈리가 합쳐져 큰 공간이 된다'],
+   ans:1, exp:'흡연으로 허파꽈리가 파괴·합쳐지면 표면적은 오히려 감소해요!'},
+];
+
+function renderQuiz(){
+  const area=document.getElementById('quizArea');
+  if(!area) return;
+  area.innerHTML='';
+  QUIZ.forEach((q,qi)=>{
+    const div=document.createElement('div');
+    div.className='quiz-card';
+    div.innerHTML=`<div class="quiz-q">${q.q}</div>
+      <ul class="quiz-opts" id="qo-${qi}">
+        ${q.opts.map((o,oi)=>`<li onclick="answerQ(${qi},${oi})">${o}</li>`).join('')}
+      </ul>
+      <div class="quiz-fb" id="qf-${qi}"></div>`;
+    area.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi){
+  if(quizDone.has(qi)) return;
+  quizDone.add(qi);
+  const q=QUIZ[qi];
+  document.querySelectorAll('#qo-'+qi+' li').forEach((li,i)=>{
+    li.classList.add('answered');
+    if(i===q.ans) li.classList.add('correct');
+    else if(i===oi) li.classList.add('wrong');
+  });
+  const fb=document.getElementById('qf-'+qi);
+  if(oi===q.ans){ fb.className='quiz-fb ok'; fb.textContent='✅ 정답! '+q.exp; quizScore++; }
+  else          { fb.className='quiz-fb ng'; fb.textContent='❌ 오답! '+q.exp; }
+
+  if(quizDone.size===QUIZ.length){
+    const pct=Math.round(quizScore/QUIZ.length*100);
+    const box=document.getElementById('quizScoreBox');
+    box.style.display='block';
+    box.innerHTML=`🌟 ${quizScore} / ${QUIZ.length} 정답! (${pct}%)<br>
+      ${pct>=80?'훌륭해요! 🎉':pct>=60?'잘 했어요! 🌸':'다시 한 번 복습해봐요 💪'}`;
+    document.getElementById('next-6').classList.add('on');
+    document.getElementById('lock-6').style.display='none';
+  }
+}
+
+/* ════════════════════════════════
+   마무리 : 결과 빌드
+════════════════════════════════ */
+function calcTime() {
+  if (!startTime) return '-';
+  const diff = Math.floor((new Date() - startTime) / 1000);
+  const m = Math.floor(diff/60), s = diff%60;
+  return m+'분 '+s+'초';
+}
+
+function buildResult() {
+  /* 기본 정보 */
+  document.getElementById('res-name').textContent  = student.name;
+  document.getElementById('res-class').textContent = student.cls+'반 '+student.num+'번';
+  const pct = Math.round(quizScore/QUIZ.length*100);
+  document.getElementById('res-score').textContent = quizScore+' / '+QUIZ.length+' ('+pct+'%)';
+  document.getElementById('res-time').textContent  = calcTime();
+  document.getElementById('res-pct').textContent   = pct+'%';
+  setTimeout(()=>{ document.getElementById('res-bar').style.width = pct+'%'; }, 300);
+
+  /* 챕터 현황 */
+  const chDiv = document.getElementById('chapterStatus');
+  chDiv.innerHTML = '';
+  const chDone = [
+    S[0].hint,
+    S[1].taba&&S[1].tabb&&S[1].organs>=6&&S[1].tabc,
+    S[2].taba&&S[2].tabb&&S[2].alv>=2&&S[2].tabc&&S[2].blank,
+    S[3].taba&&S[3].tabb&&S[3].tabc&&S[3].anim>=3,
+    S[4].taba&&S[4].tabb&&S[4].tabc&&S[4].tabd&&S[4].anim>=3,
+    flashFlipped.size>=12,
+    quizDone.size>=6,
+    true
+  ];
+  chDone.forEach((done,i)=>{
+    const sp=document.createElement('span');
+    sp.style.cssText=`display:inline-block;padding:5px 12px;border-radius:12px;font-size:.82rem;
+      background:${done?'#E8F8F2':'#FFF0EE'};
+      color:${done?'#3a8a6a':'#e74c3c'};
+      border:1.5px solid ${done?'#B5EAD7':'#FAD7D7'};`;
+    sp.textContent=(done?'✅ ':'❌ ')+CHAPTER_NAMES[i];
+    chDiv.appendChild(sp);
+  });
+
+  /* 제출 미리보기 */
+  const quizDetail = QUIZ.map((q,i)=>{
+    const answered = quizDone.has(i);
+    return `Q${i+1}: ${answered ? (/* 맞은지 확인 */
+      (() => {
+        // 정답 여부는 quizScore 로 직접 확인 불가하므로 DOM에서 읽음
+        const correctLi = document.querySelector(`#qo-${i} li.correct`);
+        const wrongLi   = document.querySelector(`#qo-${i} li.wrong`);
+        return correctLi && !wrongLi ? '⭕' : '❌';
+      })()
+    ) : '미응답'}`;
+  }).join(' | ');
+
+  document.getElementById('submitPreview').innerHTML =
+    `<strong>이름:</strong> ${student.name}<br>
+     <strong>반/번호:</strong> ${student.cls}반 ${student.num}번<br>
+     <strong>퀴즈:</strong> ${quizScore}/${QUIZ.length}점 (${pct}%)<br>
+     <strong>학습시간:</strong> ${calcTime()}<br>
+     <strong>문항별:</strong> ${quizDetail}<br>
+     <strong>완료챕터:</strong> ${chDone.filter(Boolean).length}/${chDone.length}`;
+}
+
+/* ════════════════════════════════
+   결과 제출 (Google Forms)
+════════════════════════════════ */
+function submitResult() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 제출 중...';
+
+  /* ──────────────────────────────────────────────────────────────
+     ★ 선생님께: 아래 FORM_URL과 entry ID를 Google Forms에서
+        발급받은 값으로 교체해주세요!
+
+     [Google Forms 연동 방법]
+     1. Google Forms에서 새 양식 만들기
+     2. 질문 추가: 반, 번호, 이름, 퀴즈점수, 학습시간, 상세결과
+     3. 양식 미리보기 → 개발자도구(F12) → Network 탭에서
+        제출 시 발생하는 POST 요청의 URL과 entry.XXXXXXXX 확인
+     4. 아래 FORM_URL, ENTRIES 값을 교체
+
+     [임시 동작 방식]
+     현재는 Google Forms URL이 없으므로 로컬에서 완료 표시만 합니다.
+     URL 교체 후 실제 제출이 가능해요!
+  ────────────────────────────────────────────────────────────── */
+
+  const FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfZnTA4DppwiDKbID9rsPVgahpqeN2NK7yOQA_svf952AA-kw/formResponse';
+  const ENTRIES  = {
+    class:  'entry.622922748',  // 반
+    num:    'entry.1173603271',  // 번호
+    name:   'entry.367250511',  // 이름
+    score:  'entry.265288906',  // 퀴즈점수
+    time:   'entry.523255550',  // 학습시간
+    detail: 'entry.459300023',  // 상세결과
+  };
+
+  const pct = Math.round(quizScore/QUIZ.length*100);
+  const detail = QUIZ.map((_,i)=>{
+    const c = document.querySelector(`#qo-${i} li.correct`);
+    const w = document.querySelector(`#qo-${i} li.wrong`);
+    return `Q${i+1}:${(c&&!w)?'O':'X'}`;
+  }).join(',');
+
+  const params = new URLSearchParams({
+    [ENTRIES.class]:  student.cls,
+    [ENTRIES.num]:    student.num,
+    [ENTRIES.name]:   student.name,
+    [ENTRIES.score]:  `${quizScore}/${QUIZ.length}(${pct}%)`,
+    [ENTRIES.time]:   calcTime(),
+    [ENTRIES.detail]: detail,
+  });
+
+  /* CORS 우회를 위한 no-cors fetch */
+  fetch(FORM_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body:    params.toString(),
+  })
+  .then(()  => showSubmitDone())
+  .catch(()  => showSubmitDone()); // no-cors는 항상 opaque → catch 불필요하지만 안전망
+
+  /* FORM_URL 미설정 시 즉시 완료 표시 (데모용) */
+  if (FORM_URL.includes('[여기에')) {
+    setTimeout(showSubmitDone, 1200);
+    return;
+  }
+}
+
+function showSubmitDone() {
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('submitDone').classList.add('show');
+}
+
+/* ════════════════════════════════
+   최종 체크
+════════════════════════════════ */
+function finalCheck(li){
+  li.classList.toggle('checked');
+  li.querySelector('.ck').textContent = li.classList.contains('checked')?'✅':'';
+}
+
+
+							</script>
+                        </body>
+                        </html>
+                    
